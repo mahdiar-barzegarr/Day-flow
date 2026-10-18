@@ -4,10 +4,6 @@ const { Op } = require("sequelize");
 
 const sequelize = require("../../configs/database");
 const User = require("../../models/User");
-const {
-    registerSchema,
-    loginSchema,
-} = require("./auth.validation");
 
 function createAccessToken(user) {
     return jwt.sign(
@@ -18,7 +14,7 @@ function createAccessToken(user) {
             expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || "15m",
             issuer: "day-flow-api",
             audience: "day-flow",
-        }
+        },
     );
 }
 
@@ -33,19 +29,8 @@ function publicUser(user) {
 
 async function register(req, res, next) {
     try {
-        const result = registerSchema.safeParse(req.body);
-
-        if (!result.success) {
-            return res.status(400).json({
-                message: "Validation failed",
-                errors: result.error.issues.map((issue) => ({
-                    field: issue.path.join("."),
-                    message: issue.message,
-                })),
-            });
-        }
-
-        const { username, email, password } = result.data;
+        // Already validated by the validate middleware.
+        const { username, email, password } = req.body;
 
         const existingUser = await User.findOne({
             where: {
@@ -67,7 +52,7 @@ async function register(req, res, next) {
         const user = await sequelize.transaction(async (transaction) => {
             return User.create(
                 { username, email, passwordHash },
-                { transaction }
+                { transaction },
             );
         });
 
@@ -79,32 +64,21 @@ async function register(req, res, next) {
             accessToken,
         });
     } catch (error) {
-        // Handles concurrent registration attempts with the same username/email.
+        // Handles concurrent registration attempts.
         if (error.name === "SequelizeUniqueConstraintError") {
             return res.status(409).json({
                 message: "Username or email is already registered",
             });
         }
 
-        next(error);
+        return next(error);
     }
 }
 
 async function login(req, res, next) {
     try {
-        const result = loginSchema.safeParse(req.body);
-
-        if (!result.success) {
-            return res.status(400).json({
-                message: "Validation failed",
-                errors: result.error.issues.map((issue) => ({
-                    field: issue.path.join("."),
-                    message: issue.message,
-                })),
-            });
-        }
-
-        const { identifier, password } = result.data;
+        // Already validated by the validate middleware.
+        const { identifier, password } = req.body;
         const normalizedIdentifier = identifier.toLowerCase();
 
         const user = await User.scope("withPassword").findOne({
@@ -130,7 +104,7 @@ async function login(req, res, next) {
             accessToken,
         });
     } catch (error) {
-        next(error);
+        return next(error);
     }
 }
 
@@ -148,7 +122,7 @@ async function me(req, res, next) {
             user: publicUser(user),
         });
     } catch (error) {
-        next(error);
+        return next(error);
     }
 }
 

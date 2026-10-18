@@ -8,15 +8,15 @@ plugins {
 android {
     namespace = "com.example.dayflow"
     compileSdk {
-        version = release(36) {
+        version = release(37) {
             minorApiLevel = 1
         }
     }
 
     defaultConfig {
         applicationId = "com.example.dayflow"
-        minSdk = 24
-        targetSdk = 36
+        minSdk = 25
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
 

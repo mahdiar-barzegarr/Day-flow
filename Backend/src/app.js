@@ -1,8 +1,10 @@
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
+const swaggerUi = require("swagger-ui-express");
 
 const authRoutes = require("./modules/auth/auth.routes");
+const swaggerSpec = require("./configs/swagger");
 
 const app = express();
 
@@ -22,6 +24,22 @@ app.get("/", (req, res) => {
         message: "Day-Flow API is running",
     });
 });
+
+// Swagger documentation
+app.get("/api-docs.json", (req, res) => {
+    res.json(swaggerSpec);
+});
+
+app.use(
+    "/api-docs",
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerSpec, {
+        explorer: true,
+        swaggerOptions: {
+            persistAuthorization: true,
+        },
+    }),
+);
 
 // Auth routes
 app.use("/api/auth", authRoutes);

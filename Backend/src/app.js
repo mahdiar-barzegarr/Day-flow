@@ -1,26 +1,17 @@
-require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+const helmet = require("helmet");
 
-const pool = require("./src/configs/database");
-const app = require("./app");
+const app = express();
 
-const PORT = process.env.PORT || 3000;
+app.use(helmet());
+app.use(cors());
+app.use(express.json());
 
-async function startServer() {
-    try {
-        const connection = await pool.getConnection();
-        await connection.ping();
-        connection.release();
+app.get("/", (req, res) => {
+    res.json({
+        message: "Day-Flow API is running",
+    });
+});
 
-        console.log("MySQL connected successfully");
-
-        app.listen(PORT, () => {
-            console.log(`Server running on http://localhost:${PORT}`);
-        });
-    } catch (error) {
-        console.error("Failed to start server:", error);
-        await pool.end();
-        process.exit(1);
-    }
-}
-
-startServer();
+module.exports = app;

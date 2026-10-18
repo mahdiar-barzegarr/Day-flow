@@ -1,15 +1,13 @@
 require("dotenv").config();
 
-const pool = require("./src/configs/database");
 const app = require("./app");
+const sequelize = require("./configs/database");
 
 const PORT = process.env.PORT || 3000;
 
 async function startServer() {
     try {
-        const connection = await pool.getConnection();
-        await connection.ping();
-        connection.release();
+        await sequelize.authenticate();
 
         console.log("MySQL connected successfully");
 
@@ -18,7 +16,7 @@ async function startServer() {
         });
     } catch (error) {
         console.error("Failed to start server:", error);
-        await pool.end();
+        await sequelize.close();
         process.exit(1);
     }
 }

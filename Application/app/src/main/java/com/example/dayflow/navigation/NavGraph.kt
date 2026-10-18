@@ -6,10 +6,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.dayflow.ui.home.HomeScreen
 import com.example.dayflow.ui.splash.SplashScreen
 
 object Routes {
     const val SPLASH = "splash"
+
+    const val HOME = "home"
 
 }
 
@@ -28,6 +31,10 @@ fun NavigationGraph(
                     popUpTo("splash") { inclusive = true }
                 }
             })
+        }
+
+        composable(Routes.HOME) {
+            HomeScreen()
         }
     }
 }

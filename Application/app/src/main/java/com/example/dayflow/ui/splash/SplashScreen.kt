@@ -42,7 +42,7 @@ import com.example.dayflow.ui.theme.LocalExtraColors
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
-private const val SPLASH_DURATION_MS = 2200
+private const val SPLASH_DURATION_MS = 3500
 private const val SPLASH_END_DELAY_MS = 250L
 
 @Composable

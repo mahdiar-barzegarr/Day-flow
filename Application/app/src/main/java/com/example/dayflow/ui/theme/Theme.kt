@@ -15,6 +15,8 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 
 private val DayFlowDarkColorScheme = darkColorScheme(
     primary = DfPrimary,
@@ -44,7 +46,10 @@ val LocalExtraColors = staticCompositionLocalOf { DayFlowExtraColors() }
 
 @Composable
 fun DayFlowTheme(content: @Composable () -> Unit) {
-    CompositionLocalProvider(LocalExtraColors provides DayFlowExtraColors()) {
+    CompositionLocalProvider(
+        LocalExtraColors provides DayFlowExtraColors(),
+        LocalLayoutDirection provides LayoutDirection.Rtl
+    ) {
         MaterialTheme(
             colorScheme = DayFlowDarkColorScheme,
             typography = Typography,

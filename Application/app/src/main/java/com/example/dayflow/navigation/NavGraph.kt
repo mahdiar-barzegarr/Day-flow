@@ -1,5 +1,7 @@
 package com.example.dayflow.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -17,6 +19,7 @@ object Routes {
 }
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NavigationGraph(
     navController: NavController = rememberNavController()
@@ -34,7 +37,12 @@ fun NavigationGraph(
         }
 
         composable(Routes.HOME) {
-            HomeScreen()
+            HomeScreen(
+                navController = navController,
+                onCreateChallenge = { /*TODO*/ },
+                onCreateGroup = { /*TODO*/ },
+                onNotificationsClick = { /*TODO*/ }
+            )
         }
     }
 }

@@ -261,7 +261,7 @@ private fun Section(label: String, optional: Boolean, content: @Composable () ->
 }
 
 @Composable
-private fun SheetChip(label: String, selected: Boolean, onClick: () -> Unit) {
+fun SheetChip(label: String, selected: Boolean, onClick: () -> Unit) {
     val colors = MaterialTheme.colorScheme
     Box(
         modifier = Modifier

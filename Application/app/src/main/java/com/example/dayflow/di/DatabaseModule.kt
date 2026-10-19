@@ -2,6 +2,7 @@ package com.example.dayflow.di
 
 import android.content.Context
 import androidx.room.Room
+import com.example.dayflow.data.local.ChallengeDao
 import com.example.dayflow.data.local.DayFlowDatabase
 import com.example.dayflow.data.local.HabitDao
 import dagger.Module
@@ -24,4 +25,7 @@ object DatabaseModule {
 
     @Provides
     fun provideHabitDao(database: DayFlowDatabase): HabitDao = database.habitDao()
+
+    @Provides
+    fun provideChallengeDao(database: DayFlowDatabase): ChallengeDao = database.challengeDao()
 }

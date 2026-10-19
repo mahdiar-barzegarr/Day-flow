@@ -1,7 +1,5 @@
 package com.example.dayflow.ui.home
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -76,7 +74,6 @@ import com.example.dayflow.ui.theme.LocalExtraColors
 import com.example.dayflow.utilities.toPersianDigits
 import kotlin.math.roundToInt
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(
     navController: NavController,
@@ -170,8 +167,7 @@ private fun HomeHeader(state: HomeUiState, onNotificationsClick: () -> Unit) {
                 Text(
                     text = initial.toString(),
                     color = Color.White,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.titleMedium
                 )
             } else {
                 Icon(Icons.Outlined.Person, contentDescription = null, tint = Color.White)
@@ -182,9 +178,7 @@ private fun HomeHeader(state: HomeUiState, onNotificationsClick: () -> Unit) {
             Text(
                 text = greeting,
                 color = colors.onSurface,
-                fontSize = 17.sp,
-                lineHeight = 24.sp,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.titleMedium
             )
             Caption(state.dateText)
         }
@@ -238,9 +232,7 @@ private fun ProgressCard(state: HomeUiState) {
                 Text(
                     text = title,
                     color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 20.sp,
-                    lineHeight = 28.sp,
-                    fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.titleLarge
                 )
                 Caption(message)
             }
@@ -292,8 +284,7 @@ private fun ProgressRing(progress: Float) {
         Text(
             text = "${(animated * 100).roundToInt().toPersianDigits()}٪",
             color = colors.onSurface,
-            fontSize = 17.sp,
-            fontWeight = FontWeight.Bold
+            style = MaterialTheme.typography.titleMedium
         )
     }
 }
@@ -321,8 +312,7 @@ private fun WeekSection(state: HomeUiState) {
                 Text(
                     text = "${state.streakDays.toPersianDigits()} روز پیاپی",
                     color = streakColor,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold
+                    style = MaterialTheme.typography.labelMedium
                 )
             }
         }
@@ -338,7 +328,7 @@ private fun WeekSection(state: HomeUiState) {
             }
         }
 
-        Caption("سبز: انجام شده   خط‌چین: از دست رفته", fontSize = 11.sp)
+        Caption("سبز: انجام شده   خط‌چین: از دست رفته")
     }
 }
 
@@ -355,8 +345,11 @@ private fun WeekDayItem(day: WeekDayUi) {
         Text(
             text = day.label,
             color = if (isToday) colors.onSurface else colors.onSurfaceVariant,
-            fontSize = 12.sp,
-            fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal
+            style = if (isToday) {
+                MaterialTheme.typography.labelMedium
+            } else {
+                MaterialTheme.typography.bodySmall
+            }
         )
 
         when (day.status) {
@@ -411,8 +404,7 @@ private fun WeekDayItem(day: WeekDayUi) {
                 Text(
                     text = day.dayNumber.toPersianDigits(),
                     color = Color.White,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.labelLarge
                 )
             }
 
@@ -494,8 +486,7 @@ private fun HabitRow(habit: HabitUi, onToggle: (Long, Boolean) -> Unit) {
             Text(
                 text = habit.title,
                 color = colors.onSurface,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.titleSmall
             )
             Caption(subtitle)
         }
@@ -609,8 +600,7 @@ private fun QuickAction(
             Text(
                 text = label,
                 color = colors.onSurface,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.labelLarge
             )
         }
     }
@@ -627,7 +617,7 @@ private fun AddHabitDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
         onDismissRequest = onDismiss,
         containerColor = colors.surfaceVariant,
         title = {
-            Text("ایجاد عادت", color = colors.onSurface, fontWeight = FontWeight.Bold)
+            Text("ایجاد عادت", color = colors.onSurface, style = MaterialTheme.typography.titleMedium)
         },
         text = {
             OutlinedTextField(
@@ -674,20 +664,18 @@ private fun SectionHeader(title: String, trailing: @Composable () -> Unit = {}) 
         Text(
             text = title,
             color = MaterialTheme.colorScheme.onSurface,
-            fontSize = 17.sp,
-            fontWeight = FontWeight.Bold
+            style = MaterialTheme.typography.titleMedium
         )
         trailing()
     }
 }
 
 @Composable
-private fun Caption(text: String, fontSize: androidx.compose.ui.unit.TextUnit = 12.sp) {
+private fun Caption(text: String) {
     Text(
         text = text,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        fontSize = fontSize,
-        lineHeight = fontSize * 1.5f
+        style = MaterialTheme.typography.bodySmall
     )
 }
 
@@ -705,8 +693,7 @@ private fun EmptyMessage(icon: ImageVector, text: String) {
         Text(
             text = text,
             color = colors.onSurfaceVariant,
-            fontSize = 13.sp,
-            lineHeight = 20.sp,
+            style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Start,
             modifier = Modifier.weight(1f)
         )

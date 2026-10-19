@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.example.dayflow.ui.components.WheelTimePickerDialog
 import com.example.dayflow.ui.theme.LocalExtraColors
 import com.example.dayflow.utilities.toPersianDigits
 import kotlinx.coroutines.launch
@@ -182,25 +183,12 @@ fun AddHabitSheet(
     }
 
     if (showTimePicker) {
-        val initial = minutes ?: (8 * 60)
-        val timeState = rememberTimePickerState(initial / 60, initial % 60, is24Hour = true)
-        AlertDialog(
-            onDismissRequest = { showTimePicker = false },
-            containerColor = colors.surfaceVariant,
-            text = {
-                // ساعت‌شمار همیشه چپ‌به‌راست درست دیده می‌شه
-                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-                    TimePicker(state = timeState)
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    minutes = timeState.hour * 60 + timeState.minute
-                    showTimePicker = false
-                }) { Text("تأیید") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showTimePicker = false }) { Text("لغو") }
+        WheelTimePickerDialog(
+            initialMinutes = minutes,
+            onDismiss = { showTimePicker = false },
+            onConfirm = {
+                minutes = it
+                showTimePicker = false
             }
         )
     }

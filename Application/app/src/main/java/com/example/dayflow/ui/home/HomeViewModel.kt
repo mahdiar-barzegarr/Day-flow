@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dayflow.data.local.HabitEntity
 import com.example.dayflow.data.local.HabitLogEntity
+import com.example.dayflow.repository.ChallengeRepository
 import com.example.dayflow.repository.HabitRepository
 import com.example.dayflow.utilities.persianDayOfMonth
 import com.example.dayflow.utilities.persianWeekLabels
@@ -29,7 +30,8 @@ import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val repository: HabitRepository
+    private val repository: HabitRepository,
+    private val challengeRepository: ChallengeRepository
 ) : ViewModel() {
 
     /** امروز؛ با گذر از نیمه‌شب خودش به‌روز می‌شه. */
@@ -54,6 +56,7 @@ class HomeViewModel @Inject constructor(
         initialValue = buildHomeState(LocalDate.now(), emptyList(), emptyList())
     )
 
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun toggleHabit(habitId: Long, isDone: Boolean) {
         viewModelScope.launch {
@@ -65,6 +68,17 @@ class HomeViewModel @Inject constructor(
     fun addHabit(title: String, iconKey: String, targetDays: Int?, reminderMinutes: Int?) {
         if (title.isBlank()) return
         viewModelScope.launch { repository.addHabit(title, iconKey, targetDays, reminderMinutes) }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun createChallenge(
+        title: String, iconKey: String, isGroup: Boolean, groupName: String?,
+        durationDays: Int, startEpochDay: Long?
+    ) {
+        if (title.isBlank()) return
+        viewModelScope.launch {
+            challengeRepository.create(title, iconKey, isGroup, groupName, durationDays, startEpochDay)
+        }
     }
 }
 
@@ -103,6 +117,8 @@ private fun buildHomeState(
         val list = scheduled(day)
         return list.isNotEmpty() && list.all { isDone(it.id, day) }
     }
+
+
 
     val habitItems = habits.map { habit ->
         HabitUi(

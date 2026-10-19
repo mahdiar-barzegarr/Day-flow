@@ -22,12 +22,14 @@ class HabitRepository @Inject constructor(
     suspend fun addHabit(
         title: String,
         iconKey: String = "star",
-        goalText: String? = null
+        targetDays: Int? = null,
+        reminderMinutes: Int? = null
     ): Long = habitDao.insertHabit(
         HabitEntity(
             title = title.trim(),
             iconKey = iconKey,
-            goalText = goalText,
+            targetDays = targetDays,
+            reminderMinutes = reminderMinutes,
             createdAtEpochDay = LocalDate.now().toEpochDay()
         )
     )

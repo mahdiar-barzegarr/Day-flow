@@ -10,13 +10,12 @@ import androidx.room.PrimaryKey
 data class HabitEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val title: String,
-    /** کلید آیکون: water / book / fitness / sleep / star */
     val iconKey: String = "star",
-    /** هدف اختیاری، مثلاً «۸ لیوان» */
     val goalText: String? = null,
-    /** روز ساخت عادت (LocalDate.toEpochDay) */
     val createdAtEpochDay: Long,
-    val isArchived: Boolean = false
+    val isArchived: Boolean = false,
+    val targetDays: Int? = null,
+    val reminderMinutes: Int? = null,
 )
 
 /** هر ردیف یعنی عادت [habitId] در روز [epochDay] انجام شده. */

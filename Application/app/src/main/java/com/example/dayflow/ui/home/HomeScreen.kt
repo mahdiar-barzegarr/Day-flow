@@ -1,5 +1,7 @@
 package com.example.dayflow.ui.home
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -74,6 +76,7 @@ import com.example.dayflow.ui.theme.LocalExtraColors
 import com.example.dayflow.utilities.toPersianDigits
 import kotlin.math.roundToInt
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(
     navController: NavController,
@@ -102,12 +105,9 @@ fun HomeScreen(
 
     // موقت: تا وقتی صفحه‌ی ساخت عادت ساخته نشده
     if (showAddDialog) {
-        AddHabitDialog(
+        AddHabitSheet(
             onDismiss = { showAddDialog = false },
-            onConfirm = {
-                viewModel.addHabit(it)
-                showAddDialog = false
-            }
+            onCreate = viewModel::addHabit
         )
     }
 }
@@ -459,10 +459,10 @@ private fun HabitsSection(state: HomeUiState, onToggle: (Long, Boolean) -> Unit)
 private fun HabitRow(habit: HabitUi, onToggle: (Long, Boolean) -> Unit) {
     val colors = MaterialTheme.colorScheme
     val (icon, tint) = habitVisual(habit.iconKey)
-    val subtitle = listOfNotNull(
-        habit.goalText,
-        "${habit.streak.toPersianDigits()} روز پیاپی"
-    ).joinToString(" · ")
+    val progressText = habit.targetDays
+        ?.let { "${habit.streak.toPersianDigits()} از ${it.toPersianDigits()} روز" }
+        ?: "${habit.streak.toPersianDigits()} روز پیاپی"
+    val subtitle = listOfNotNull(habit.reminderMinutes?.toTimeText(), progressText).joinToString(" · ")
 
     Row(
         modifier = Modifier
@@ -525,7 +525,7 @@ private fun CheckCircle(done: Boolean) {
 }
 
 @Composable
-private fun habitVisual(key: String): Pair<ImageVector, Color> {
+fun habitVisual(key: String): Pair<ImageVector, Color> {
     val colors = MaterialTheme.colorScheme
     val extra = LocalExtraColors.current
     return when (key) {
@@ -606,38 +606,6 @@ private fun QuickAction(
     }
 }
 
-// ───────────── Add habit (موقت) ─────────────
-
-@Composable
-private fun AddHabitDialog(onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
-    val colors = MaterialTheme.colorScheme
-    var title by remember { mutableStateOf("") }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        containerColor = colors.surfaceVariant,
-        title = {
-            Text("ایجاد عادت", color = colors.onSurface, style = MaterialTheme.typography.titleMedium)
-        },
-        text = {
-            OutlinedTextField(
-                value = title,
-                onValueChange = { title = it },
-                placeholder = { Text("عنوان عادت") },
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp)
-            )
-        },
-        confirmButton = {
-            TextButton(enabled = title.isNotBlank(), onClick = { onConfirm(title) }) {
-                Text("ثبت")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("لغو") }
-        }
-    )
-}
 
 // ───────────── Shared bits ─────────────
 

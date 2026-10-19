@@ -62,9 +62,9 @@ class HomeViewModel @Inject constructor(
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun addHabit(title: String) {
+    fun addHabit(title: String, iconKey: String, targetDays: Int?, reminderMinutes: Int?) {
         if (title.isBlank()) return
-        viewModelScope.launch { repository.addHabit(title) }
+        viewModelScope.launch { repository.addHabit(title, iconKey, targetDays, reminderMinutes) }
     }
 }
 
@@ -111,7 +111,9 @@ private fun buildHomeState(
             iconKey = habit.iconKey,
             goalText = habit.goalText,
             isDoneToday = isDone(habit.id, todayEpoch),
-            streak = habitStreak(doneDays[habit.id].orEmpty(), todayEpoch)
+            streak = habitStreak(doneDays[habit.id].orEmpty(), todayEpoch),
+            targetDays = habit.targetDays,
+            reminderMinutes = habit.reminderMinutes,
         )
     }
 

@@ -5,6 +5,7 @@ const swaggerUi = require("swagger-ui-express");
 
 const authRoutes = require("./modules/auth/auth.routes");
 const groupRoutes = require("./modules/groups/groups.routes");
+const tasksRoutes = require("./modules/tasks/tasks.routes");
 const swaggerSpec = require("./configs/swagger");
 
 const app = express();
@@ -47,6 +48,9 @@ app.use("/api/auth", authRoutes);
 
 // Group routes
 app.use("/api/groups", groupRoutes);
+
+//Task routes
+app.use("/api/tasks", tasksRoutes);
 
 // Handle unknown routes
 app.use((req, res) => {

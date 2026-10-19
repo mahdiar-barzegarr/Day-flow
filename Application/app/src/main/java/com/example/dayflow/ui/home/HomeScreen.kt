@@ -71,6 +71,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.dayflow.ui.challenges.ChallengesViewModel
+import com.example.dayflow.ui.challenges.CreateChallengeSheet
 import com.example.dayflow.ui.components.DayFlowBottomBar
 import com.example.dayflow.ui.theme.LocalExtraColors
 import com.example.dayflow.utilities.toPersianDigits
@@ -88,6 +90,9 @@ fun HomeScreen(
     val state by viewModel.uiState.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
 
+    var showCreate by remember { mutableStateOf(false) }
+
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = { DayFlowBottomBar(navController) }
@@ -97,7 +102,7 @@ fun HomeScreen(
             modifier = Modifier.padding(padding),
             onToggleHabit = viewModel::toggleHabit,
             onCreateHabit = { showAddDialog = true },
-            onCreateChallenge = onCreateChallenge,
+            onCreateChallenge = { showCreate = true },
             onCreateGroup = onCreateGroup,
             onNotificationsClick = onNotificationsClick
         )
@@ -108,6 +113,13 @@ fun HomeScreen(
         AddHabitSheet(
             onDismiss = { showAddDialog = false },
             onCreate = viewModel::addHabit
+        )
+    }
+
+    if (showCreate){
+        CreateChallengeSheet(
+            onDismiss = { showCreate = false },
+            onCreate = viewModel::createChallenge
         )
     }
 }

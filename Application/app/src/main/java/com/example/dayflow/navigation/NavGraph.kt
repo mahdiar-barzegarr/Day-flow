@@ -5,9 +5,13 @@ import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.dayflow.ui.challenges.ChallengeDetailScreen
+import com.example.dayflow.ui.challenges.ChallengesScreen
 import com.example.dayflow.ui.home.HomeScreen
 import com.example.dayflow.ui.splash.SplashScreen
 
@@ -15,6 +19,8 @@ object Routes {
     const val SPLASH = "splash"
 
     const val HOME = "home"
+
+    const val CHALLENGE= "challenges"
 
 }
 
@@ -43,6 +49,19 @@ fun NavigationGraph(
                 onCreateGroup = { /*TODO*/ },
                 onNotificationsClick = { /*TODO*/ }
             )
+        }
+
+        composable(Routes.CHALLENGE) {
+            ChallengesScreen(
+                navController = navController,
+                onChallengeClick = { id -> navController.navigate("challenge/$id") }
+            )
+        }
+        composable(
+            route = "challenge/{id}",
+            arguments = listOf(navArgument("id") { type = NavType.LongType })
+        ) {
+            ChallengeDetailScreen(onBack = { navController.popBackStack() })
         }
     }
 }

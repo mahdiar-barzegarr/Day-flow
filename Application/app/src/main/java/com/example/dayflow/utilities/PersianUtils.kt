@@ -33,3 +33,9 @@ fun LocalDate.persianDayOfMonth(): Int {
     calendar.time = toDate()
     return calendar.get(Calendar.DAY_OF_MONTH)
 }
+
+fun LocalDate.toPersianDayMonth(): String =
+    SimpleDateFormat("d MMMM", persianLocale).format(toDate())
+
+fun LocalDate.toPersianDayMonthYear(): String =
+    SimpleDateFormat("d MMMM y", persianLocale).format(toDate())

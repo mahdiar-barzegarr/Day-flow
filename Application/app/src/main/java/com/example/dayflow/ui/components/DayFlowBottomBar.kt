@@ -133,8 +133,11 @@ private fun BottomBarItem(
             Text(
                 text = tab.label,
                 color = contentColor,
-                fontSize = 11.sp,
-                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                style = if (selected) {
+                    MaterialTheme.typography.labelSmall
+                } else {
+                    MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp)
+                },
                 maxLines = 1
             )
         }

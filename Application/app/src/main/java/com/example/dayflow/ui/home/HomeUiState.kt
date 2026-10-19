@@ -14,7 +14,9 @@ data class HabitUi(
     val iconKey: String,
     val goalText: String?,
     val isDoneToday: Boolean,
-    val streak: Int
+    val streak: Int,
+    val targetDays: Int?,
+    val reminderMinutes: Int?
 )
 
 data class HomeUiState(

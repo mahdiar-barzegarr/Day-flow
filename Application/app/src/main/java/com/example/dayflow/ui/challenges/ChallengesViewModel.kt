@@ -1,5 +1,7 @@
 package com.example.dayflow.ui.challenges
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dayflow.data.local.ChallengeEntity
@@ -15,6 +17,7 @@ import java.time.LocalDateTime
 import javax.inject.Inject
 
 /** امروز؛ با گذر از نیمه‌شب خودش به‌روز می‌شه. */
+@RequiresApi(Build.VERSION_CODES.O)
 internal fun todayEpochDayFlow(): Flow<Long> = flow {
     while (true) {
         emit(LocalDate.now().toEpochDay())
@@ -37,6 +40,7 @@ class ChallengesViewModel @Inject constructor(
 
     private val controls = MutableStateFlow(Controls())
 
+    @RequiresApi(Build.VERSION_CODES.O)
     val uiState: StateFlow<ChallengesUiState> = combine(
         todayEpochDayFlow(),
         repository.observeChallenges(),
@@ -50,6 +54,7 @@ class ChallengesViewModel @Inject constructor(
     fun setQuery(query: String) = controls.update { it.copy(query = query) }
     fun toggleSearch() = controls.update { it.copy(searchOpen = !it.searchOpen, query = "") }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun createChallenge(
         title: String, iconKey: String, isGroup: Boolean, groupName: String?,
         durationDays: Int, startEpochDay: Long?
@@ -60,6 +65,7 @@ class ChallengesViewModel @Inject constructor(
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun activate(id: Long) {
         viewModelScope.launch { repository.activate(id) }
     }
@@ -77,6 +83,7 @@ private fun String.normalized(): String = trim().lowercase()
     }
     .joinToString("")
 
+@RequiresApi(Build.VERSION_CODES.O)
 private fun buildListState(
     today: Long,
     challenges: List<ChallengeEntity>,

@@ -261,7 +261,7 @@ private fun Section(label: String, optional: Boolean, content: @Composable () ->
 }
 
 @Composable
-fun SheetChip(label: String, selected: Boolean, onClick: () -> Unit) {
+internal fun SheetChip(label: String, selected: Boolean, onClick: () -> Unit) {
     val colors = MaterialTheme.colorScheme
     Box(
         modifier = Modifier
@@ -280,7 +280,7 @@ fun SheetChip(label: String, selected: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-private fun StepButton(icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
+internal fun StepButton(icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
     val colors = MaterialTheme.colorScheme
     Box(
         modifier = Modifier

@@ -1,5 +1,7 @@
 package com.example.dayflow.ui.challenges
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -29,6 +31,7 @@ import com.example.dayflow.ui.theme.LocalExtraColors
 import com.example.dayflow.utilities.toPersianDigits
 import kotlin.math.roundToInt
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ChallengesScreen(
     navController: NavController,

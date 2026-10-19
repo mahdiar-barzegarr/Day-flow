@@ -3,9 +3,6 @@ require("dotenv").config();
 const app = require("./app");
 const sequelize = require("./configs/database");
 
-// Register Sequelize models
-require("./models/User");
-
 const PORT = Number(process.env.PORT) || 3000;
 
 async function startServer() {
@@ -18,8 +15,12 @@ async function startServer() {
 
         console.log("MySQL connected successfully");
 
+        apiDocs = `http://localhost:${PORT}`;
+
+        console.log(`api doc: ${apiDocs}/api-docs`);
+
         app.listen(PORT, () => {
-            console.log(`Server running on http://localhost:${PORT}`);
+            console.log(`Server running on ${apiDocs}`);
         });
     } catch (error) {
         console.error("Failed to start server:", error.message);

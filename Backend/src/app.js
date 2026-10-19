@@ -4,6 +4,7 @@ const helmet = require("helmet");
 const swaggerUi = require("swagger-ui-express");
 
 const authRoutes = require("./modules/auth/auth.routes");
+const groupRoutes = require("./modules/groups/groups.routes");
 const swaggerSpec = require("./configs/swagger");
 
 const app = express();
@@ -43,6 +44,9 @@ app.use(
 
 // Auth routes
 app.use("/api/auth", authRoutes);
+
+// Group routes
+app.use("/api/groups", groupRoutes);
 
 // Handle unknown routes
 app.use((req, res) => {

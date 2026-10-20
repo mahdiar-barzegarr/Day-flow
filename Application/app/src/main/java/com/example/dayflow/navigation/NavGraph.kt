@@ -16,9 +16,11 @@ import androidx.navigation.navArgument
 import com.example.dayflow.ui.challenges.ChallengeDetailScreen
 import com.example.dayflow.ui.challenges.ChallengesScreen
 import com.example.dayflow.ui.home.HomeScreen
+import com.example.dayflow.ui.login.LoginScreen
 import com.example.dayflow.ui.profile.ProfileScreen
 import com.example.dayflow.ui.profile.ProfileUiState
 import com.example.dayflow.ui.profile.ProfileViewModel
+import com.example.dayflow.ui.register.RegisterScreen
 import com.example.dayflow.ui.splash.SplashScreen
 
 object Routes {
@@ -26,9 +28,13 @@ object Routes {
 
     const val HOME = "home"
 
-    const val CHALLENGE= "challenges"
+    const val CHALLENGE = "challenges"
 
-    const val PROFILE= "challenges"
+    const val PROFILE = "profile"
+
+    const val LOGIN = "login"
+
+    const val REGISTER = "register"
 
 }
 
@@ -41,7 +47,7 @@ fun NavigationGraph(
     NavHost(
         navController = navController as NavHostController,
         startDestination = Routes.SPLASH
-    ){
+    ) {
         composable(Routes.SPLASH) {
             SplashScreen(onFinished = {
                 navController.navigate("home") {
@@ -72,7 +78,7 @@ fun NavigationGraph(
             ChallengeDetailScreen(onBack = { navController.popBackStack() })
         }
 
-        composable("profile") {
+        composable(Routes.PROFILE) {
             val vm: ProfileViewModel = hiltViewModel()
             val state by vm.uiState.collectAsState()
 
@@ -81,7 +87,28 @@ fun NavigationGraph(
                 state = state,
                 onSeeAllChallenges = { navController.navigate("challenges") },
                 onChallengeClick = { id -> navController.navigate("challenge/$id") },
-                onEditProfile = { vm.saveProfile("کاربر مهمان", "unknown", "هر روز یه قدم کوچک، یه هدف بزرگ.") }
+                onEditProfile = {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(Routes.LOGIN) {
+            LoginScreen(navController = navController)
+        }
+
+        composable(Routes.REGISTER) {
+            RegisterScreen(
+                onLoginClick = { navController.navigate(Routes.LOGIN) },
+                onRegisterSuccess = {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                onBackClick = { navController.popBackStack() },
+                navController = navController
             )
         }
     }

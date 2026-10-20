@@ -3,6 +3,9 @@ package com.example.dayflow.navigation
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -13,6 +16,9 @@ import androidx.navigation.navArgument
 import com.example.dayflow.ui.challenges.ChallengeDetailScreen
 import com.example.dayflow.ui.challenges.ChallengesScreen
 import com.example.dayflow.ui.home.HomeScreen
+import com.example.dayflow.ui.profile.ProfileScreen
+import com.example.dayflow.ui.profile.ProfileUiState
+import com.example.dayflow.ui.profile.ProfileViewModel
 import com.example.dayflow.ui.splash.SplashScreen
 
 object Routes {
@@ -21,6 +27,8 @@ object Routes {
     const val HOME = "home"
 
     const val CHALLENGE= "challenges"
+
+    const val PROFILE= "challenges"
 
 }
 
@@ -62,6 +70,19 @@ fun NavigationGraph(
             arguments = listOf(navArgument("id") { type = NavType.LongType })
         ) {
             ChallengeDetailScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable("profile") {
+            val vm: ProfileViewModel = hiltViewModel()
+            val state by vm.uiState.collectAsState()
+
+            ProfileScreen(
+                navController = navController,
+                state = state,
+                onSeeAllChallenges = { navController.navigate("challenges") },
+                onChallengeClick = { id -> navController.navigate("challenge/$id") },
+                onEditProfile = { vm.saveProfile("کاربر مهمان", "unknown", "هر روز یه قدم کوچک، یه هدف بزرگ.") }
+            )
         }
     }
 }

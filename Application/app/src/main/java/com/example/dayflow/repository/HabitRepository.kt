@@ -18,6 +18,8 @@ class HabitRepository @Inject constructor(
 
     fun observeLogs(): Flow<List<HabitLogEntity>> = habitDao.observeAllLogs()
 
+    fun observeTotalDone(): Flow<Int> = habitDao.observeTotalDone()
+
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun addHabit(
         title: String,

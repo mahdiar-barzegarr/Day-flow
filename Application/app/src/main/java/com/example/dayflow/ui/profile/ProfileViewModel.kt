@@ -5,6 +5,7 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dayflow.data.local.*
+import com.example.dayflow.data.local.Token.TokenManager
 import com.example.dayflow.repository.ChallengeRepository
 import com.example.dayflow.repository.HabitRepository
 import com.example.dayflow.ui.challenges.buildChallengeUi
@@ -24,13 +25,17 @@ private data class ChallengeStats(val completed: Int, val active: List<ProfileCh
 class ProfileViewModel @Inject constructor(
     habitRepository: HabitRepository,
     challengeRepository: ChallengeRepository,
-    private val userPrefs: UserPreferences
+    private val userPrefs: UserPreferences,
+    private val tokenManager: TokenManager
 ) : ViewModel() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private val todayFlow = todayEpochDayFlow()
 
-    // مرحله‌ی ۱: آمار عادت‌ها
+    private val isLoggedIn = tokenManager.accessTokenFlow
+        .map { !it.isNullOrBlank() }
+        .distinctUntilChanged()
+
     @RequiresApi(Build.VERSION_CODES.O)
     private val habitStats = combine(
         habitRepository.observeHabits(),
@@ -41,7 +46,6 @@ class ProfileViewModel @Inject constructor(
         HabitStats(streak = overallStreak(habits, logs, day), totalDone = total)
     }
 
-    // مرحله‌ی ۲: آمار چالش‌ها
     @RequiresApi(Build.VERSION_CODES.O)
     private val challengeStats = combine(
         challengeRepository.observeChallenges(),
@@ -51,11 +55,12 @@ class ProfileViewModel @Inject constructor(
         buildChallengeStats(challenges, logs, day)
     }
 
-    // مرحله‌ی ۳: ترکیب همه با پروفایل
+    @RequiresApi(Build.VERSION_CODES.O)
     val uiState: StateFlow<ProfileUiState> = combine(
-        userPrefs.profile, habitStats, challengeStats
-    ) { profile, habits, challenges ->
+        userPrefs.profile, habitStats, challengeStats, isLoggedIn
+    ) { profile, habits, challenges, loggedIn ->
         ProfileUiState(
+            isLoggedIn = loggedIn,
             name = profile.name,
             username = profile.username,
             bio = profile.bio,
@@ -68,6 +73,10 @@ class ProfileViewModel @Inject constructor(
 
     fun saveProfile(name: String, username: String, bio: String) {
         viewModelScope.launch { userPrefs.saveProfile(name, username, bio) }
+    }
+
+    fun logout() {
+        viewModelScope.launch { tokenManager.clearSession() }
     }
 }
 

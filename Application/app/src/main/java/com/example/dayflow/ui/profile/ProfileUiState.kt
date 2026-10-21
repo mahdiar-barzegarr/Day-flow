@@ -10,7 +10,8 @@ data class ProfileUiState(
     val totalHabitsDone: Int = 0,
     val completedChallenges: Int = 0,
     val activeChallenges: List<ProfileChallengeUi> = emptyList(),
-    val themeLabel: String = "تاریک"
+    val themeLabel: String = "تاریک",
+    val isLoggedIn: Boolean = false
 )
 
 enum class ProfileSetting { Reminders, Privacy, Theme, Account }

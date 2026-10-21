@@ -15,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.dayflow.ui.challenges.ChallengeDetailScreen
 import com.example.dayflow.ui.challenges.ChallengesScreen
+import com.example.dayflow.ui.group.GroupsScreen
 import com.example.dayflow.ui.home.HomeScreen
 import com.example.dayflow.ui.login.LoginScreen
 import com.example.dayflow.ui.profile.ProfileScreen
@@ -35,6 +36,7 @@ object Routes {
     const val LOGIN = "login"
 
     const val REGISTER = "register"
+    const val GROUP = "groups"
 
 }
 
@@ -110,6 +112,10 @@ fun NavigationGraph(
                 onBackClick = { navController.popBackStack() },
                 navController = navController
             )
+        }
+
+        composable(Routes.GROUP) {
+            GroupsScreen(navController = navController)
         }
     }
 }

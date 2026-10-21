@@ -1,32 +1,33 @@
 package com.example.dayflow.ui.register
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AlternateEmail
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Layers
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Mail
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.outlined.AlternateEmail
+import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.PersonOutline
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,27 +35,48 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 
-private val BrandPurple = Color(0xFF5B4FE9)
-private val TextDark = Color(0xFF1A1A2E)
-private val TextGray = Color(0xFF8A8FA3)
-private val FieldBorder = Color(0xFFE2E4EC)
-private val ScreenBg = Color(0xFFF7F8FC)
-private val BackBg = Color(0xFFECEBFB)
+private val ScreenBg = Color(0xFF070B14)
+private val FieldBg = Color(0xFF111A2B)
+private val FieldBorder = Color(0xFF222C42)
+private val BarEmpty = Color(0xFF222C42)
+private val TextWhite = Color.White
+private val TextMuted = Color(0xFF8B93A7)
+private val AccentBlue = Color(0xFF3B82F6)
+private val LinkBlue = Color(0xFF6EA0FF)
+private val LinkPurple = Color(0xFF8B7CFF)
+private val ErrorRed = Color(0xFFFF5470)
+private val SuccessGreen = Color(0xFF2DD4A0)
+private val WarnOrange = Color(0xFFF5A524)
+private val GradientStart = Color(0xFF6C5CE7)
+private val GradientEnd = Color(0xFF2F6FE4)
+private val BrandGradient = Brush.horizontalGradient(listOf(GradientStart, GradientEnd))
 
 @Composable
 fun RegisterScreen(
@@ -63,15 +85,18 @@ fun RegisterScreen(
     onRegisterSuccess: () -> Unit,
     viewModel: RegisterViewModel = hiltViewModel(),
     navController: NavController,
-    ) {
+) {
     val fullName by viewModel.fullName.collectAsStateWithLifecycle()
-    val phoneNumber by viewModel.phoneNumber.collectAsStateWithLifecycle()
+    val username by viewModel.username.collectAsStateWithLifecycle()
+    val usernameStatus by viewModel.usernameStatus.collectAsStateWithLifecycle()
+    val email by viewModel.email.collectAsStateWithLifecycle()
     val password by viewModel.password.collectAsStateWithLifecycle()
     val confirmPassword by viewModel.confirmPassword.collectAsStateWithLifecycle()
+    val isPasswordVisible by viewModel.isPasswordVisible.collectAsStateWithLifecycle()
+    val acceptTerms by viewModel.acceptTerms.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
     val isRegisterSuccess by viewModel.isRegisterSuccess.collectAsStateWithLifecycle()
-
 
     LaunchedEffect(isRegisterSuccess) {
         if (isRegisterSuccess) {
@@ -81,207 +106,353 @@ fun RegisterScreen(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(ScreenBg)
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp)
-    ) {
-        Spacer(modifier = Modifier.height(32.dp))
+    val strength = passwordStrength(password)
+    val confirmMismatch = confirmPassword.isNotEmpty() && confirmPassword != password
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(BackBg)
-                    .clickable { onBackClick() },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.ArrowBack,
-                    contentDescription = "بازگشت",
-                    tint = BrandPurple,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(BrandPurple),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Layers,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Text(
-            text = "GET STARTED",
-            color = BrandPurple,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 0.5.sp
-        )
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Text(
-            text = "Create your account",
-            color = TextDark,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(6.dp))
-
-        Text(
-            text = "Set up your profile in a few simple steps.",
-            color = TextGray,
-            fontSize = 13.sp
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        FieldLabel("Full name")
-        Spacer(modifier = Modifier.height(8.dp))
-        OutlinedTextField(
-            value = fullName,
-            onValueChange = viewModel::onFullNameChanged,
-            placeholder = { Text("Your name", color = TextGray) },
-            leadingIcon = { Icon(Icons.Filled.Person, contentDescription = null, tint = TextGray) },
-            singleLine = true,
-            shape = RoundedCornerShape(14.dp),
-            colors = fieldColors(),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        FieldLabel("Phone number")
-        Spacer(modifier = Modifier.height(8.dp))
-        OutlinedTextField(
-            value = phoneNumber,
-            onValueChange = viewModel::onPhoneNumberChanged,
-            placeholder = { Text("09131111111", color = TextGray) },
-            leadingIcon = {
-                Icon(
-                    Icons.Filled.AlternateEmail,
-                    contentDescription = null,
-                    tint = TextGray
-                )
-            },
-            singleLine = true,
-            shape = RoundedCornerShape(14.dp),
-            colors = fieldColors(),
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Phone
-            )
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-
-        FieldLabel("Password")
-        Spacer(modifier = Modifier.height(8.dp))
-        OutlinedTextField(
-            value = password,
-            onValueChange = viewModel::onPasswordChanged,
-            placeholder = { Text("Create a password", color = TextGray) },
-            leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null, tint = TextGray) },
-            singleLine = true,
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            shape = RoundedCornerShape(14.dp),
-            colors = fieldColors(),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        FieldLabel("Confirm password")
-        Spacer(modifier = Modifier.height(8.dp))
-        OutlinedTextField(
-            value = confirmPassword,
-            onValueChange = viewModel::onConfirmPasswordChanged,
-            placeholder = { Text("Repeat your password", color = TextGray) },
-            leadingIcon = { Icon(Icons.Filled.Shield, contentDescription = null, tint = TextGray) },
-            singleLine = true,
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            shape = RoundedCornerShape(14.dp),
-            colors = fieldColors(),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        errorMessage?.let { msg ->
-            Spacer(modifier = Modifier.height(10.dp))
-            Text(text = msg, color = Color(0xFFE0483F), fontSize = 12.sp)
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Button(
-            onClick = viewModel::onCreateAccountClick,
-            enabled = !isLoading,
-            colors = ButtonDefaults.buttonColors(containerColor = BrandPurple),
-            shape = RoundedCornerShape(16.dp),
-            contentPadding = PaddingValues(vertical = 14.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    color = Color.White,
-                    strokeWidth = 2.dp
-                )
-            } else {
-                Text(text = "Create account", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Row(
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 32.dp),
-            horizontalArrangement = Arrangement.Center
+                .fillMaxSize()
+                .background(ScreenBg)
+                .drawBehind {
+                    drawRect(
+                        brush = Brush.radialGradient(
+                            colors = listOf(Color(0x335B4FE9), Color.Transparent),
+                            center = Offset(size.width / 2f, 0f),
+                            radius = size.width * 0.9f
+                        )
+                    )
+                }
         ) {
-            Text(text = "Already have an account? ", color = TextGray, fontSize = 13.sp)
-            Text(
-                text = "Log in",
-                color = BrandPurple,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.clickable { onLoginClick() }
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .imePadding()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 24.dp)
+            ) {
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // هدر: دکمه برگشت (راست) و لوگو (چپ)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(FieldBg)
+                            .border(1.dp, FieldBorder, RoundedCornerShape(14.dp))
+                            .clickable { onBackClick() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "بازگشت",
+                            tint = TextWhite,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                        Text(
+                            text = buildAnnotatedString {
+                                withStyle(SpanStyle(color = TextWhite)) { append("Streak") }
+                                withStyle(SpanStyle(color = AccentBlue)) { append("Up") }
+                            },
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Text("ساخت حساب", color = TextWhite, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(6.dp))
+                Text("فقط چند اطلاعات ساده، بعد شروع می‌کنیم.", color = TextMuted, fontSize = 13.sp)
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // نام نمایشی
+                FieldLabel("نام نمایشی")
+                Spacer(modifier = Modifier.height(8.dp))
+                DarkField(
+                    value = fullName,
+                    onValueChange = viewModel::onFullNameChanged,
+                    leadingIcon = Icons.Outlined.PersonOutline
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // نام کاربری یکتا
+                val usernameOk = usernameStatus == UsernameStatus.Available
+                val usernameTaken = usernameStatus == UsernameStatus.Taken
+                FieldLabel("نام کاربری یکتا")
+                Spacer(modifier = Modifier.height(8.dp))
+                DarkField(
+                    value = username,
+                    onValueChange = viewModel::onUsernameChanged,
+                    leadingIcon = Icons.Outlined.AlternateEmail,
+                    isError = usernameTaken,
+                    isSuccess = usernameOk,
+                    keyboardType = KeyboardType.Ascii,
+                    trailing = {
+                        when (usernameStatus) {
+                            UsernameStatus.Available -> Icon(
+                                Icons.Filled.Check, null, tint = SuccessGreen,
+                                modifier = Modifier.size(20.dp)
+                            )
+
+                            UsernameStatus.Checking -> CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                color = TextMuted,
+                                strokeWidth = 2.dp
+                            )
+
+                            else -> {}
+                        }
+                    }
+                )
+                if (usernameOk) HelperText("این نام کاربری آزاد است.", SuccessGreen)
+                if (usernameTaken) HelperText("این نام کاربری قبلاً گرفته شده.", ErrorRed)
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // ایمیل
+                FieldLabel("ایمیل")
+                Spacer(modifier = Modifier.height(8.dp))
+                DarkField(
+                    value = email,
+                    onValueChange = viewModel::onEmailChanged,
+                    leadingIcon = Icons.Outlined.Email,
+                    keyboardType = KeyboardType.Email
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // رمز عبور
+                FieldLabel("رمز عبور")
+                Spacer(modifier = Modifier.height(8.dp))
+                DarkField(
+                    value = password,
+                    onValueChange = viewModel::onPasswordChanged,
+                    leadingIcon = Icons.Outlined.Lock,
+                    keyboardType = KeyboardType.Password,
+                    visualTransformation = if (isPasswordVisible) VisualTransformation.None
+                    else PasswordVisualTransformation(),
+                    trailing = {
+                        IconButton(onClick = viewModel::onTogglePasswordVisibility) {
+                            Icon(
+                                imageVector = if (isPasswordVisible) Icons.Outlined.VisibilityOff
+                                else Icons.Outlined.Visibility,
+                                contentDescription = null,
+                                tint = TextMuted
+                            )
+                        }
+                    }
+                )
+
+                if (password.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    StrengthBar(strength)
+                    val (label, color) = when {
+                        password.length < 8 -> "رمز عبور کوتاه است. حداقل ۸ نویسه." to ErrorRed
+                        strength <= 2 -> "رمز عبور متوسط است." to WarnOrange
+                        else -> "رمز عبور خوب است. حداقل ۸ نویسه." to TextMuted
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(label, color = color, fontSize = 11.sp)
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // تکرار رمز عبور
+                FieldLabel("تکرار رمز عبور")
+                Spacer(modifier = Modifier.height(8.dp))
+                DarkField(
+                    value = confirmPassword,
+                    onValueChange = viewModel::onConfirmPasswordChanged,
+                    leadingIcon = Icons.Outlined.Lock,
+                    isError = confirmMismatch,
+                    keyboardType = KeyboardType.Password,
+                    visualTransformation = if (isPasswordVisible) VisualTransformation.None
+                    else PasswordVisualTransformation()
+                )
+                if (confirmMismatch) HelperText("تکرار رمز عبور با رمز بالا یکسان نیست.", ErrorRed)
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // قوانین
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.clickable { viewModel.onAcceptTermsChanged(!acceptTerms) }
+                ) {
+                    TermsBox(checked = acceptTerms)
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(
+                        text = buildAnnotatedString {
+                            withStyle(SpanStyle(color = TextMuted)) { append("با ") }
+                            withStyle(SpanStyle(color = LinkBlue)) { append("شرایط استفاده") }
+                            withStyle(SpanStyle(color = TextMuted)) { append(" و ") }
+                            withStyle(SpanStyle(color = LinkBlue)) { append("حریم خصوصی") }
+                            withStyle(SpanStyle(color = TextWhite)) { append(" موافقم.") }
+                        },
+                        fontSize = 12.sp
+                    )
+                }
+
+                errorMessage?.let { msg ->
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(msg, color = ErrorRed, fontSize = 12.sp)
+                }
+
+                Spacer(modifier = Modifier.height(28.dp))
+
+                // دکمه
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(BrandGradient)
+                        .clickable(enabled = !isLoading) { viewModel.onCreateAccountClick() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(22.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(
+                            "ساخت حساب",
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 32.dp),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text("قبلاً ثبت‌نام کرده‌ای؟ ", color = TextMuted, fontSize = 13.sp)
+                    Text(
+                        text = "ورود",
+                        color = LinkPurple,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.clickable { onLoginClick() }
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
 private fun FieldLabel(text: String) {
-    Text(text = text, color = TextDark, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+    Text(text, color = TextWhite, fontSize = 12.sp, fontWeight = FontWeight.Bold)
 }
 
 @Composable
-private fun fieldColors() = OutlinedTextFieldDefaults.colors(
-    unfocusedBorderColor = FieldBorder,
-    focusedBorderColor = BrandPurple,
-    unfocusedContainerColor = Color.White,
-    focusedContainerColor = Color.White
-)
+private fun HelperText(text: String, color: Color) {
+    Spacer(modifier = Modifier.height(6.dp))
+    Text(text, color = color, fontSize = 11.sp, textAlign = TextAlign.Start)
+}
+
+@Composable
+private fun DarkField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    leadingIcon: ImageVector,
+    isError: Boolean = false,
+    isSuccess: Boolean = false,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    trailing: (@Composable () -> Unit)? = null,
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        leadingIcon = { Icon(leadingIcon, contentDescription = null, tint = TextMuted) },
+        trailingIcon = trailing,
+        singleLine = true,
+        isError = isError,
+        visualTransformation = visualTransformation,
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+        shape = RoundedCornerShape(16.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedTextColor = TextWhite,
+            unfocusedTextColor = TextWhite,
+            errorTextColor = TextWhite,
+            cursorColor = AccentBlue,
+            errorCursorColor = ErrorRed,
+            focusedBorderColor = if (isSuccess) SuccessGreen else AccentBlue,
+            unfocusedBorderColor = if (isSuccess) SuccessGreen else FieldBorder,
+            errorBorderColor = ErrorRed,
+            focusedContainerColor = FieldBg,
+            unfocusedContainerColor = FieldBg,
+            errorContainerColor = FieldBg
+        ),
+        modifier = Modifier.fillMaxWidth()
+    )
+}
+
+@Composable
+private fun StrengthBar(score: Int) {
+    val activeColor = when (score) {
+        1 -> ErrorRed
+        2 -> WarnOrange
+        else -> SuccessGreen
+    }
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        repeat(4) { i ->
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(4.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(if (i < score) activeColor else BarEmpty)
+            )
+        }
+    }
+}
+
+@Composable
+private fun TermsBox(checked: Boolean) {
+    Box(
+        modifier = Modifier
+            .size(24.dp)
+            .clip(RoundedCornerShape(7.dp))
+            .then(
+                if (checked) Modifier.background(
+                    Brush.linearGradient(
+                        listOf(
+                            GradientStart,
+                            AccentBlue
+                        )
+                    )
+                )
+                else Modifier
+                    .background(FieldBg)
+                    .border(1.dp, FieldBorder, RoundedCornerShape(7.dp))
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        if (checked) {
+            Icon(Icons.Filled.Check, null, tint = Color.White, modifier = Modifier.size(16.dp))
+        }
+    }
+}

@@ -1,5 +1,4 @@
 package com.example.dayflow.ui.profile
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -17,10 +16,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.dayflow.ui.challenges.ChallengeProgressBar
 import com.example.dayflow.ui.challenges.FlowSurface
@@ -31,8 +35,12 @@ import kotlin.math.roundToInt
 
 @Composable
 fun ProfileScreen(
+    viewModel: ProfileViewModel = hiltViewModel(),
     navController: NavController,
     state: ProfileUiState,
+    onLogin: () -> Unit = { navController.navigate("login") },
+    onRegister: () -> Unit = { navController.navigate("register") },
+    onAboutClick: () -> Unit = {},
     onEditProfile: () -> Unit = {},
     onSeeAllChallenges: () -> Unit = {},
     onChallengeClick: (Long) -> Unit = {},
@@ -55,20 +63,174 @@ fun ProfileScreen(
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             Text("پروفایل", style = MaterialTheme.typography.titleLarge, color = colors.onSurface)
-            ProfileHeader(state, onEditProfile)
-            StatsRow(state)
-            ActiveChallenges(state, onSeeAllChallenges, onChallengeClick)
-            SettingsSection(state, onSettingClick, onLogout)
-            Text(
-                "اطلاعات شخصی مثل ایمیل به‌طور پیش‌فرض برای دیگران نمایش داده نمی‌شود.",
-                style = MaterialTheme.typography.bodySmall,
-                color = colors.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
+
+            if (state.isLoggedIn) {
+                ProfileHeader(state, onEditProfile)
+                StatsRow(state)
+                ActiveChallenges(state, onSeeAllChallenges, onChallengeClick)
+                SettingsSection(state, onSettingClick, { viewModel.logout() })
+                Text(
+                    "اطلاعات شخصی مثل ایمیل به‌طور پیش‌فرض برای دیگران نمایش داده نمی‌شود.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            } else {
+                GuestContent(
+                    state = state,
+                    onLogin = onLogin,
+                    onRegister = onRegister,
+                    onThemeClick = { onSettingClick(ProfileSetting.Theme) },
+                    onAboutClick = onAboutClick
+                )
+            }
         }
     }
 }
+
+// ───────────────────────── حالت مهمان ─────────────────────────
+
+@Composable
+private fun GuestContent(
+    state: ProfileUiState,
+    onLogin: () -> Unit,
+    onRegister: () -> Unit,
+    onThemeClick: () -> Unit,
+    onAboutClick: () -> Unit
+) {
+    val colors = MaterialTheme.colorScheme
+    val extra = LocalExtraColors.current
+    val buttonShape = RoundedCornerShape(20.dp)
+    val dashColor = colors.onSurfaceVariant.copy(alpha = 0.5f)
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Spacer(Modifier.height(12.dp))
+        Box(
+            modifier = Modifier
+                .size(96.dp)
+                .clip(CircleShape)
+                .background(colors.surface)
+                .drawBehind {
+                    drawCircle(
+                        color = dashColor,
+                        style = Stroke(
+                            width = 1.dp.toPx(),
+                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f))
+                        )
+                    )
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                Icons.Outlined.Person, null,
+                tint = colors.onSurfaceVariant,
+                modifier = Modifier.size(44.dp)
+            )
+        }
+        Spacer(Modifier.height(8.dp))
+        Text(
+            "وارد حساب خودت شو",
+            style = MaterialTheme.typography.titleLarge,
+            color = colors.onSurface
+        )
+        Text(
+            "با ورود، عادت‌ها، چالش‌ها و گروه‌هایت در همه دستگاه‌ها همگام می‌شوند.",
+            style = MaterialTheme.typography.bodySmall,
+            color = colors.secondary,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+    }
+
+    FlowSurface {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            BenefitRow(Icons.Outlined.Sync, "پیشرفت و استریک‌هایت هیچ‌وقت گم نمی‌شود", extra.success)
+            BenefitRow(Icons.Outlined.Groups, "گروه بساز و با دوستانت برنامه هماهنگ کن", colors.secondary)
+            BenefitRow(Icons.Outlined.Notifications, "یادآور و دعوت‌ها را به‌موقع دریافت کن", extra.highlight)
+        }
+    }
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .clip(buttonShape)
+                .background(extra.brandGradient)
+                .clickable(onClick = onLogin),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("ورود", style = MaterialTheme.typography.labelLarge, color = Color.White, fontWeight = FontWeight.Bold)
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .clip(buttonShape)
+                .background(colors.surface)
+                .border(1.dp, colors.outline, buttonShape)
+                .clickable(onClick = onRegister),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("ساخت حساب", style = MaterialTheme.typography.labelLarge, color = colors.onSurface, fontWeight = FontWeight.Bold)
+        }
+    }
+
+    FlowSurface {
+        SettingRow(
+            icon = Icons.Outlined.DarkMode,
+            title = "ظاهر برنامه",
+            value = state.themeLabel,
+            tint = colors.onSurface,
+            showChevron = true,
+            onClick = onThemeClick
+        )
+        Divider()
+        SettingRow(
+            icon = Icons.Outlined.Info,
+            title = "درباره StreakUp",
+            value = null,
+            tint = colors.onSurface,
+            showChevron = true,
+            onClick = onAboutClick
+        )
+    }
+}
+
+@Composable
+private fun BenefitRow(icon: ImageVector, text: String, tint: Color) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(tint.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(icon, null, tint = tint, modifier = Modifier.size(18.dp))
+        }
+        Text(
+            text,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+// ───────────────────────── حالت لاگین‌شده ─────────────────────────
 
 @Composable
 private fun ProfileHeader(state: ProfileUiState, onEdit: () -> Unit) {
@@ -83,7 +245,10 @@ private fun ProfileHeader(state: ProfileUiState, onEdit: () -> Unit) {
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         Box(
-            modifier = Modifier.size(96.dp).clip(CircleShape).background(extra.brandGradient),
+            modifier = Modifier
+                .size(96.dp)
+                .clip(CircleShape)
+                .background(extra.brandGradient),
             contentAlignment = Alignment.Center
         ) {
             if (initial != null) {
@@ -119,7 +284,7 @@ private fun ProfileHeader(state: ProfileUiState, onEdit: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("ورود و ثبت نام", style = MaterialTheme.typography.labelLarge, color = colors.onSurface)
+            Text("ویرایش پروفایل", style = MaterialTheme.typography.labelLarge, color = colors.onSurface)
             Icon(Icons.Outlined.Edit, null, tint = colors.onSurface, modifier = Modifier.size(16.dp))
         }
     }
@@ -140,7 +305,9 @@ private fun StatsRow(state: ProfileUiState) {
 private fun StatTile(value: String, label: String, color: Color, modifier: Modifier) {
     FlowSurface(modifier = modifier) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp, horizontal = 8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp, horizontal = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
@@ -188,7 +355,9 @@ private fun ActiveChallenges(
                 ) {
                     state.activeChallenges.forEach { c ->
                         Column(
-                            modifier = Modifier.fillMaxWidth().clickable { onChallengeClick(c.id) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onChallengeClick(c.id) },
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Row(

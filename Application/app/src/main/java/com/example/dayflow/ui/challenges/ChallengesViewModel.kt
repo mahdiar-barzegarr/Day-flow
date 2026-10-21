@@ -71,7 +71,6 @@ class ChallengesViewModel @Inject constructor(
     }
 }
 
-/** ي/ك عربی، ارقام فارسی و عربی و حروف بزرگ رو یکسان می‌کنه تا جستجو دقیق باشه */
 private fun String.normalized(): String = trim().lowercase()
     .replace('ي', 'ی').replace('ك', 'ک')
     .map {

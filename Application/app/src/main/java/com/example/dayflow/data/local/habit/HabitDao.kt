@@ -25,4 +25,7 @@ interface HabitDao {
 
     @Query("DELETE FROM habit_logs WHERE habitId = :habitId AND epochDay = :epochDay")
     suspend fun deleteLog(habitId: Long, epochDay: Long)
+
+    @Query("SELECT COUNT(*) FROM habit_logs")
+    fun observeTotalDone(): Flow<Int>
 }

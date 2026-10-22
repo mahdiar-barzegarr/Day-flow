@@ -1,4 +1,3 @@
-const { Op } = require("sequelize");
 const Group = require("../../models/Group");
 
 const listGroups = async (req, res) => {

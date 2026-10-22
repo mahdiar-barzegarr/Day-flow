@@ -15,7 +15,6 @@ const {
     deleteGroup,
 } = require("./groups.controller");
 
-// All group endpoints require authentication.
 router.use(authenticate);
 
 router.get("/", listGroups);

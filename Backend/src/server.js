@@ -15,12 +15,12 @@ async function startServer() {
 
         console.log("MySQL connected successfully");
 
-        apiDocs = `http://localhost:${PORT}`;
+        url = `http://localhost:${PORT}`;
 
-        console.log(`api doc: ${apiDocs}/api-docs`);
+        console.log(`api doc: ${url}/api-docs`);
 
         app.listen(PORT, () => {
-            console.log(`Server running on ${apiDocs}`);
+            console.log(`Server running on ${url}`);
         });
     } catch (error) {
         console.error("Failed to start server:", error.message);

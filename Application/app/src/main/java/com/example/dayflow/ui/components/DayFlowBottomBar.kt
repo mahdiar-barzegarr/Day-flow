@@ -48,11 +48,7 @@ enum class BottomTab(val route: String, val label: String, val icon: ImageVector
     Profile("profile", "پروفایل", Icons.Outlined.Person)
 }
 
-/**
- * نوار پایین مشترک همه‌ی صفحه‌ها. استفاده:
- *
- * Scaffold(bottomBar = { DayFlowBottomBar(navController) }) { ... }
- */
+
 @Composable
 fun DayFlowBottomBar(navController: NavController) {
     val backStackEntry by navController.currentBackStackEntryAsState()

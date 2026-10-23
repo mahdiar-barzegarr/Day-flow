@@ -13,7 +13,6 @@ interface HabitDao {
     @Query("SELECT * FROM habits WHERE isArchived = 0 ORDER BY id")
     fun observeActiveHabits(): Flow<List<HabitEntity>>
 
-    // برای شروع همه‌ی لاگ‌ها؛ در آینده می‌شه با بازه‌ی زمانی محدودش کرد
     @Query("SELECT * FROM habit_logs")
     fun observeAllLogs(): Flow<List<HabitLogEntity>>
 
@@ -28,4 +27,7 @@ interface HabitDao {
 
     @Query("SELECT COUNT(*) FROM habit_logs")
     fun observeTotalDone(): Flow<Int>
+
+    @Query("UPDATE habits SET isArchived = 1 WHERE id = :id")
+    suspend fun archiveHabit(id: Long)
 }

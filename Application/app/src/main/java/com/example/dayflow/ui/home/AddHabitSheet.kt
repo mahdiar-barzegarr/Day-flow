@@ -26,7 +26,6 @@ private val habitIconKeys = listOf("star", "water", "book", "fitness", "sleep")
 private val durationPresets = listOf(7, 21, 30, 66)
 private val timePresets = listOf("صبح" to 7 * 60, "عصر" to 18 * 60, "شب" to 21 * 60)
 
-/** ساعت به‌صورت متن فارسی، مثل «۰۷:۳۰» */
 internal fun Int.toTimeText(): String =
     "${(this / 60).toString().padStart(2, '0')}:${(this % 60).toString().padStart(2, '0')}"
         .map { if (it in '0'..'9') '۰' + (it - '0') else it }
@@ -68,10 +67,8 @@ fun AddHabitSheet(
         ) {
             Text("عادت جدید", style = MaterialTheme.typography.titleLarge, color = colors.onSurface)
 
-            // پیش‌نمایش زنده
             HabitPreview(title, iconKey, targetDays, minutes)
 
-            // عنوان (اجباری)
             Section("عنوان", optional = false) {
                 OutlinedTextField(
                     value = title,

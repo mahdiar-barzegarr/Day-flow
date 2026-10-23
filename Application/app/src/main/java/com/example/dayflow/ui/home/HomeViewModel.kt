@@ -34,7 +34,6 @@ class HomeViewModel @Inject constructor(
     private val challengeRepository: ChallengeRepository
 ) : ViewModel() {
 
-    /** امروز؛ با گذر از نیمه‌شب خودش به‌روز می‌شه. */
     @RequiresApi(Build.VERSION_CODES.O)
     private val today: Flow<LocalDate> = flow {
         while (true) {
@@ -55,6 +54,8 @@ class HomeViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = buildHomeState(LocalDate.now(), emptyList(), emptyList())
     )
+
+
 
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -80,6 +81,10 @@ class HomeViewModel @Inject constructor(
             challengeRepository.create(title, iconKey, isGroup, groupName, durationDays, startEpochDay)
         }
     }
+
+    fun deleteHabit(habitId: Long) {
+        viewModelScope.launch { repository.deleteHabit(habitId) }
+    }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -89,7 +94,6 @@ private fun millisUntilNextDay(): Long {
     return Duration.between(now, midnight).toMillis() + 1_000
 }
 
-/** تعداد روزهای پیاپی که این عادت انجام شده (اگه امروز هنوز انجام نشده، از دیروز می‌شمره). */
 private fun habitStreak(doneDays: Set<Long>, today: Long): Int {
     var day = if (today in doneDays) today else today - 1
     var count = 0
@@ -99,6 +103,8 @@ private fun habitStreak(doneDays: Set<Long>, today: Long): Int {
     }
     return count
 }
+
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 private fun buildHomeState(
@@ -133,7 +139,6 @@ private fun buildHomeState(
         )
     }
 
-    // هفته از شنبه شروع می‌شه
     val weekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.SATURDAY))
     val week = persianWeekLabels.mapIndexed { index, label ->
         val date = weekStart.plusDays(index.toLong())
@@ -148,7 +153,6 @@ private fun buildHomeState(
         WeekDayUi(label = label, dayNumber = date.persianDayOfMonth(), status = status)
     }
 
-    // استریک کلی: روزهای پیاپی که همه‌ی عادت‌ها انجام شدن
     var streak = 0
     val earliest = habits.minOfOrNull { it.createdAtEpochDay }
     if (earliest != null) {
@@ -167,4 +171,6 @@ private fun buildHomeState(
         week = week,
         habits = habitItems
     )
+
+
 }

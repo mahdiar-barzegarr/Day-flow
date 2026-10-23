@@ -6,9 +6,11 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,7 +43,6 @@ import androidx.compose.material.icons.outlined.WaterDrop
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -65,13 +66,10 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.dayflow.ui.challenges.ChallengesViewModel
 import com.example.dayflow.ui.challenges.CreateChallengeSheet
 import com.example.dayflow.ui.components.DayFlowBottomBar
 import com.example.dayflow.ui.theme.LocalExtraColors
@@ -101,6 +99,7 @@ fun HomeScreen(
             state = state,
             modifier = Modifier.padding(padding),
             onToggleHabit = viewModel::toggleHabit,
+            onDeleteHabit = viewModel::deleteHabit,
             onCreateHabit = { showAddDialog = true },
             onCreateChallenge = { showCreate = true },
             onCreateGroup = onCreateGroup,
@@ -108,7 +107,6 @@ fun HomeScreen(
         )
     }
 
-    // موقت: تا وقتی صفحه‌ی ساخت عادت ساخته نشده
     if (showAddDialog) {
         AddHabitSheet(
             onDismiss = { showAddDialog = false },
@@ -129,6 +127,7 @@ private fun HomeContent(
     state: HomeUiState,
     modifier: Modifier,
     onToggleHabit: (Long, Boolean) -> Unit,
+    onDeleteHabit: (Long) -> Unit,
     onCreateHabit: () -> Unit,
     onCreateChallenge: () -> Unit,
     onCreateGroup: () -> Unit,
@@ -144,7 +143,7 @@ private fun HomeContent(
         HomeHeader(state, onNotificationsClick)
         ProgressCard(state)
         WeekSection(state)
-        HabitsSection(state, onToggleHabit)
+        HabitsSection(state, onToggleHabit, onDeleteHabit)
         GroupSection()
         QuickActions(onCreateHabit, onCreateChallenge, onCreateGroup)
     }
@@ -432,7 +431,11 @@ private fun WeekDayItem(day: WeekDayUi) {
 // ───────────── Habits ─────────────
 
 @Composable
-private fun HabitsSection(state: HomeUiState, onToggle: (Long, Boolean) -> Unit) {
+private fun HabitsSection(
+    state: HomeUiState,
+    onToggle: (Long, Boolean) -> Unit,
+    onDelete: (Long) -> Unit
+) {
     val colors = MaterialTheme.colorScheme
 
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -452,7 +455,7 @@ private fun HabitsSection(state: HomeUiState, onToggle: (Long, Boolean) -> Unit)
         } else {
             FlowCard {
                 state.habits.forEachIndexed { index, habit ->
-                    HabitRow(habit, onToggle)
+                    HabitRow(habit, onToggle, onDelete)
                     if (index < state.habits.lastIndex) {
                         Box(
                             modifier = Modifier
@@ -467,10 +470,17 @@ private fun HabitsSection(state: HomeUiState, onToggle: (Long, Boolean) -> Unit)
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun HabitRow(habit: HabitUi, onToggle: (Long, Boolean) -> Unit) {
+private fun HabitRow(
+    habit: HabitUi,
+    onToggle: (Long, Boolean) -> Unit,
+    onDelete: (Long) -> Unit
+) {
     val colors = MaterialTheme.colorScheme
     val (icon, tint) = habitVisual(habit.iconKey)
+    var confirmDelete by remember { mutableStateOf(false) }
+
     val progressText = habit.targetDays
         ?.let { "${habit.streak.toPersianDigits()} از ${it.toPersianDigits()} روز" }
         ?: "${habit.streak.toPersianDigits()} روز پیاپی"
@@ -479,7 +489,10 @@ private fun HabitRow(habit: HabitUi, onToggle: (Long, Boolean) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onToggle(habit.id, habit.isDoneToday) }
+            .combinedClickable(
+                onClick = { onToggle(habit.id, habit.isDoneToday) },
+                onLongClick = { confirmDelete = true }
+            )
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -504,6 +517,31 @@ private fun HabitRow(habit: HabitUi, onToggle: (Long, Boolean) -> Unit) {
         }
 
         CheckCircle(done = habit.isDoneToday)
+    }
+
+    if (confirmDelete) {
+        AlertDialog(
+            onDismissRequest = { confirmDelete = false },
+            containerColor = colors.surface,
+            title = { Text("حذف عادت", color = colors.onSurface, style = MaterialTheme.typography.titleMedium) },
+            text = {
+                Text(
+                    "«${habit.title}» حذف بشه؟ تاریخچه‌ی قبلیت توی آمار می‌مونه.",
+                    color = colors.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { onDelete(habit.id); confirmDelete = false }) {
+                    Text("حذف", color = colors.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmDelete = false }) {
+                    Text("انصراف", color = colors.onSurfaceVariant)
+                }
+            }
+        )
     }
 }
 

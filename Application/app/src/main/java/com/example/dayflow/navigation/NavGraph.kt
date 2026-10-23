@@ -27,6 +27,7 @@ import com.example.dayflow.ui.friends.FriendsViewModel
 import com.example.dayflow.ui.group.GroupsScreen
 import com.example.dayflow.ui.home.HomeScreen
 import com.example.dayflow.ui.login.LoginScreen
+import com.example.dayflow.ui.notification.NotificationSettingsScreen
 import com.example.dayflow.ui.profile.ProfileScreen
 import com.example.dayflow.ui.profile.ProfileViewModel
 import com.example.dayflow.ui.register.RegisterScreen
@@ -48,10 +49,12 @@ object Routes {
 
     const val FRIENDS = "friends"
 
+    const val NOTIFICATIONS = "notifications"
+
 }
 
 fun NavController.navigateToTab(route: String) {
-    if (currentDestination?.route == route) return   // روی همان تب کلیک شد: هیچ کاری نکن
+    if (currentDestination?.route == route) return
     navigate(route) {
         popUpTo(graph.findStartDestination().id) { saveState = true }
         launchSingleTop = true
@@ -149,6 +152,10 @@ fun NavigationGraph(
                 onLoginClick = { navController.navigate(Routes.LOGIN) },
                 onRegisterClick = { navController.navigate(Routes.REGISTER) }
             )
+        }
+
+        composable(Routes.NOTIFICATIONS) {
+            NotificationSettingsScreen()
         }
     }
 }

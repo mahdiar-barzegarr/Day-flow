@@ -1,4 +1,5 @@
 package com.example.dayflow.ui.profile
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -26,6 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.dayflow.navigation.Routes
 import com.example.dayflow.ui.challenges.ChallengeProgressBar
 import com.example.dayflow.ui.challenges.FlowSurface
 import com.example.dayflow.ui.components.DayFlowBottomBar
@@ -82,7 +84,8 @@ fun ProfileScreen(
                     onLogin = onLogin,
                     onRegister = onRegister,
                     onThemeClick = { onSettingClick(ProfileSetting.Theme) },
-                    onAboutClick = onAboutClick
+                    onAboutClick = onAboutClick,
+                    onNtifClick = {navController.navigate(Routes.NOTIFICATIONS)}
                 )
             }
         }
@@ -97,7 +100,8 @@ private fun GuestContent(
     onLogin: () -> Unit,
     onRegister: () -> Unit,
     onThemeClick: () -> Unit,
-    onAboutClick: () -> Unit
+    onAboutClick: () -> Unit,
+    onNtifClick: () -> Unit,
 ) {
     val colors = MaterialTheme.colorScheme
     val extra = LocalExtraColors.current
@@ -201,6 +205,15 @@ private fun GuestContent(
             tint = colors.onSurface,
             showChevron = true,
             onClick = onAboutClick
+        )
+        Divider()
+        SettingRow(
+            icon = Icons.Outlined.Info,
+            title = "مدیریت یاداوری",
+            value = null,
+            tint = colors.onSurface,
+            showChevron = true,
+            onClick = onNtifClick
         )
     }
 }

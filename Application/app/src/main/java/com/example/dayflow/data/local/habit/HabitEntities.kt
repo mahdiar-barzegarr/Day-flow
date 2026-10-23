@@ -15,10 +15,9 @@ data class HabitEntity(
     val createdAtEpochDay: Long,
     val isArchived: Boolean = false,
     val targetDays: Int? = null,
-    val reminderMinutes: Int? = null,
+    val reminderMinutes: Int? = null
 )
 
-/** هر ردیف یعنی عادت [habitId] در روز [epochDay] انجام شده. */
 @Entity(
     tableName = "habit_logs",
     primaryKeys = ["habitId", "epochDay"],

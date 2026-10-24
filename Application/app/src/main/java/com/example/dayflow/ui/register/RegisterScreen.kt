@@ -176,12 +176,13 @@ fun RegisterScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // نام نمایشی
-                FieldLabel("نام نمایشی")
+                FieldLabel("یوزر نیم")
                 Spacer(modifier = Modifier.height(8.dp))
                 DarkField(
                     value = fullName,
                     onValueChange = viewModel::onFullNameChanged,
-                    leadingIcon = Icons.Outlined.PersonOutline
+                    leadingIcon = Icons.Outlined.PersonOutline,
+                    placeholder = "نامی که به شما نمایش داده میشود"
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -213,7 +214,8 @@ fun RegisterScreen(
 
                             else -> {}
                         }
-                    }
+                    },
+                    placeholder = "نام یوزر نیم شما"
                 )
                 if (usernameOk) HelperText("این نام کاربری آزاد است.", SuccessGreen)
                 if (usernameTaken) HelperText("این نام کاربری قبلاً گرفته شده.", ErrorRed)
@@ -227,7 +229,8 @@ fun RegisterScreen(
                     value = email,
                     onValueChange = viewModel::onEmailChanged,
                     leadingIcon = Icons.Outlined.Email,
-                    keyboardType = KeyboardType.Email
+                    keyboardType = KeyboardType.Email,
+                    placeholder = "ایمیل شما"
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -251,7 +254,8 @@ fun RegisterScreen(
                                 tint = TextMuted
                             )
                         }
-                    }
+                    },
+                    placeholder = "رمز عبور"
                 )
 
                 if (password.isNotEmpty()) {
@@ -276,6 +280,7 @@ fun RegisterScreen(
                     onValueChange = viewModel::onConfirmPasswordChanged,
                     leadingIcon = Icons.Outlined.Lock,
                     isError = confirmMismatch,
+                    placeholder = "تکرار رمز عبور",
                     keyboardType = KeyboardType.Password,
                     visualTransformation = if (isPasswordVisible) VisualTransformation.None
                     else PasswordVisualTransformation()
@@ -372,6 +377,7 @@ private fun HelperText(text: String, color: Color) {
 @Composable
 private fun DarkField(
     value: String,
+    placeholder: String,
     onValueChange: (String) -> Unit,
     leadingIcon: ImageVector,
     isError: Boolean = false,
@@ -403,6 +409,7 @@ private fun DarkField(
             unfocusedContainerColor = FieldBg,
             errorContainerColor = FieldBg
         ),
+        placeholder = { Text(placeholder, color = TextMuted) },
         modifier = Modifier.fillMaxWidth()
     )
 }

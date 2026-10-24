@@ -24,6 +24,10 @@ class TokenAuthenticator @Inject constructor(
     }
 
     override fun authenticate(route: Route?, response: Response): Request? {
+        val path = response.request.url.encodedPath
+        if (path.endsWith("/auth/refresh") || path.endsWith("/auth/login") ||
+            path.endsWith("/auth/register") || path.endsWith("/auth/logout")) return null
+
         if (responseCount(response) >= 2) return null
 
         return runBlocking {
@@ -43,19 +47,17 @@ class TokenAuthenticator @Inject constructor(
 
                 try {
                     val refreshResponse = apiServiceProvider.get()
-                        .refreshToken(RefreshRequest(refreshToken))
+                        .refresh(RefreshRequest(refreshToken))
 
                     if (refreshResponse.isSuccessful) {
-                        val newAccess = refreshResponse.body()?.access ?: return@withLock null
-                        tokenManager.updateAccessTokenBlocking(newAccess)
-                        refreshResponse.body()?.refresh?.let { newRefresh ->
-                            tokenManager.updateRefreshTokenBlocking(newRefresh)
-                        }
+                        val body = refreshResponse.body() ?: return@withLock null
+                        tokenManager.updateAccessTokenBlocking(body.access)
+                        tokenManager.updateRefreshTokenBlocking(body.refresh)
                         response.request.newBuilder()
-                            .header("Authorization", "Bearer $newAccess")
+                            .header("Authorization", "Bearer ${body.access}")
                             .build()
                     } else {
-                        tokenManager.clearSession()
+                        if (refreshResponse.code() in listOf(400, 401, 403)) tokenManager.clearSession()
                         null
                     }
                 } catch (e: Exception) {

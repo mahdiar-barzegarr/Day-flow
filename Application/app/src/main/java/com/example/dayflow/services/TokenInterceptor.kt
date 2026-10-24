@@ -14,9 +14,7 @@ class TokenInterceptor @Inject constructor(
         val token = tokenManager.getAccessTokenBlocking()
 
         val request = if (!token.isNullOrEmpty()) {
-            original.newBuilder()
-                .addHeader("Authorization", "Bearer $token")
-                .build()
+            original.newBuilder().header("Authorization", "Bearer $token").build()
         } else {
             original
         }

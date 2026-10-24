@@ -39,11 +39,11 @@ class ApiRepository @Inject constructor(
     }
 
 
-    suspend fun getProfile(): Response<ProfileResponse> = api.getProfile()
+    suspend fun getProfile(): Response<ProfileResponse> = api.me()
 
 
     suspend fun refreshToken(refresh: String): Response<RefreshResponse> =
-        api.refreshToken(RefreshRequest(refresh))
+        api.refresh(RefreshRequest(refresh))
 
 
 }

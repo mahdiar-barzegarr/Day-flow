@@ -8,12 +8,15 @@ const registerSchema = z.object({
         .max(30, "Username must be at most 30 characters")
         .regex(
             /^[a-zA-Z0-9_]+$/,
-            "Username can only contain letters, numbers and underscores"
+            "Username can only contain letters, numbers and underscores",
         ),
 
-    email: z.string().trim().email().max(254).transform((value) =>
-        value.toLowerCase()
-    ),
+    email: z
+        .string()
+        .trim()
+        .email()
+        .max(254)
+        .transform((value) => value.toLowerCase()),
 
     password: z
         .string()
@@ -26,7 +29,12 @@ const loginSchema = z.object({
     password: z.string().min(1, "Password is required").max(128),
 });
 
+const refreshSchema = z.object({
+    refreshToken: z.string().min(1),
+});
+
 module.exports = {
     registerSchema,
     loginSchema,
+    refreshSchema,
 };

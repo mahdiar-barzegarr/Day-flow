@@ -1,9 +1,13 @@
 const argon2 = require("argon2");
 const jwt = require("jsonwebtoken");
+const crypto = require("node:crypto");
 const { Op } = require("sequelize");
 
 const sequelize = require("../../configs/database");
 const User = require("../../models/User");
+const RefreshToken = require("../../models/RefreshToken");
+
+const REFRESH_TOKEN_EXPIRES_IN_DAYS = 7;
 
 function createAccessToken(user) {
     return jwt.sign(
@@ -18,12 +22,49 @@ function createAccessToken(user) {
     );
 }
 
+function generateRefreshToken() {
+    return crypto.randomBytes(48).toString("base64url");
+}
+
+function hashRefreshToken(token) {
+    return crypto.createHash("sha256").update(token).digest("hex");
+}
+
 function publicUser(user) {
     return {
         id: user.id,
         username: user.username,
         email: user.email,
         createdAt: user.createdAt,
+    };
+}
+
+async function issueRefreshToken(user, transaction) {
+    const refreshToken = generateRefreshToken();
+
+    const expiresAt = new Date(
+        Date.now() + REFRESH_TOKEN_EXPIRES_IN_DAYS * 24 * 60 * 60 * 1000,
+    );
+
+    await RefreshToken.create(
+        {
+            userId: user.id,
+            tokenHash: hashRefreshToken(refreshToken),
+            expiresAt,
+        },
+        { transaction },
+    );
+
+    return refreshToken;
+}
+
+async function issueTokenPair(user, transaction) {
+    const accessToken = createAccessToken(user);
+    const refreshToken = await issueRefreshToken(user, transaction);
+
+    return {
+        accessToken,
+        refreshToken,
     };
 }
 
@@ -49,19 +90,25 @@ async function register(req, res, next) {
 
         const passwordHash = await argon2.hash(password);
 
-        const user = await sequelize.transaction(async (transaction) => {
-            return User.create(
+        const result = await sequelize.transaction(async (transaction) => {
+            const user = await User.create(
                 { username, email, passwordHash },
                 { transaction },
             );
-        });
 
-        const accessToken = createAccessToken(user);
+            const tokens = await issueTokenPair(user, transaction);
+
+            return {
+                user,
+                ...tokens,
+            };
+        });
 
         return res.status(201).json({
             message: "Registration successful",
-            user: publicUser(user),
-            accessToken,
+            user: publicUser(result.user),
+            accessToken: result.accessToken,
+            refreshToken: result.refreshToken,
         });
     } catch (error) {
         // Handles concurrent registration attempts.
@@ -96,12 +143,112 @@ async function login(req, res, next) {
             });
         }
 
-        const accessToken = createAccessToken(user);
+        const tokens = await sequelize.transaction(async (transaction) => {
+            return issueTokenPair(user, transaction);
+        });
 
         return res.status(200).json({
             message: "Login successful",
             user: publicUser(user),
-            accessToken,
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
+        });
+    } catch (error) {
+        return next(error);
+    }
+}
+
+async function refresh(req, res, next) {
+    try {
+        const { refreshToken } = req.body;
+
+        if (typeof refreshToken !== "string" || !refreshToken) {
+            return res.status(400).json({
+                message: "Refresh token is required",
+            });
+        }
+
+        const tokenHash = hashRefreshToken(refreshToken);
+
+        const result = await sequelize.transaction(async (transaction) => {
+            const storedToken = await RefreshToken.findOne({
+                where: { tokenHash },
+                transaction,
+                lock: transaction.LOCK.UPDATE,
+            });
+
+            if (!storedToken) {
+                return { error: "INVALID_REFRESH_TOKEN" };
+            }
+
+            if (
+                storedToken.revokedAt ||
+                new Date(storedToken.expiresAt).getTime() <= Date.now()
+            ) {
+                return { error: "INVALID_REFRESH_TOKEN" };
+            }
+
+            const user = await User.findByPk(storedToken.userId, {
+                transaction,
+            });
+
+            if (!user) {
+                storedToken.revokedAt = new Date();
+                await storedToken.save({ transaction });
+
+                return { error: "INVALID_REFRESH_TOKEN" };
+            }
+
+            // Revoke the old token before issuing a replacement.
+            storedToken.revokedAt = new Date();
+            await storedToken.save({ transaction });
+
+            const tokens = await issueTokenPair(user, transaction);
+
+            return {
+                accessToken: tokens.accessToken,
+                refreshToken: tokens.refreshToken,
+            };
+        });
+
+        if (result.error) {
+            return res.status(401).json({
+                message: "Invalid or expired refresh token",
+            });
+        }
+
+        return res.status(200).json({
+            message: "Token refreshed successfully",
+            accessToken: result.accessToken,
+            refreshToken: result.refreshToken,
+        });
+    } catch (error) {
+        return next(error);
+    }
+}
+
+async function logout(req, res, next) {
+    try {
+        const { refreshToken } = req.body;
+
+        if (typeof refreshToken !== "string" || !refreshToken) {
+            return res.status(400).json({
+                message: "Refresh token is required",
+            });
+        }
+
+        await RefreshToken.update(
+            { revokedAt: new Date() },
+            {
+                where: {
+                    tokenHash: hashRefreshToken(refreshToken),
+                    revokedAt: null,
+                },
+            },
+        );
+
+        return res.status(200).json({
+            message: "Logged out successfully",
         });
     } catch (error) {
         return next(error);
@@ -129,5 +276,7 @@ async function me(req, res, next) {
 module.exports = {
     register,
     login,
+    refresh,
+    logout,
     me,
 };

@@ -14,14 +14,14 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 
 interface ApiService {
-    @POST("auth/register")
+    @POST("register")
     suspend fun register(@Body body: RegisterRequest): Response<RegisterResponse>
-    @POST("auth/login")
+    @POST("login")
     suspend fun login(@Body body: LoginRequest): Response<LoginResponse>
-    @POST("auth/refresh")
+    @POST("refresh")
     suspend fun refresh(@Body body: RefreshRequest): Response<RefreshResponse>
-    @POST("auth/logout")
+    @POST("logout")
     suspend fun logout(@Body body: LogOutRequest): Response<Unit>
-    @GET("auth/me")
+    @GET("me")
     suspend fun me(): Response<ProfileResponse>
 }

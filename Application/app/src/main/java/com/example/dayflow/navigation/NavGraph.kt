@@ -141,16 +141,10 @@ fun NavigationGraph(
         }
 
         composable(Routes.FRIENDS) {
-            val vm: FriendsViewModel = viewModel(
-                factory = viewModelFactory {
-                    initializer { FriendsViewModel(FakeFriendsRepository(), FakeSessionManager()) }
-                }
-            )
             FriendsScreen(
-                viewModel = vm,
                 navController = navController,
-                onLoginClick = { navController.navigate(Routes.LOGIN) },
-                onRegisterClick = { navController.navigate(Routes.REGISTER) }
+                onLoginClick = { navController.navigate("login") },
+                onRegisterClick = { navController.navigate("register") }
             )
         }
 

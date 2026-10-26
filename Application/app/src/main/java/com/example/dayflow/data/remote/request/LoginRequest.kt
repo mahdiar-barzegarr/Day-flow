@@ -4,8 +4,8 @@ import com.google.gson.annotations.SerializedName
 
 data class LoginRequest(
 
-    @SerializedName("phone_number")
-    val phoneNumber: String,
+    @SerializedName("identifier")
+    val identifier: String,
 
     val password: String
 

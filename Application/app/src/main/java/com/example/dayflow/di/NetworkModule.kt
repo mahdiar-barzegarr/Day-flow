@@ -1,4 +1,4 @@
-package com.example.loginproject.di
+package com.example.dayflow.di
 
 import com.example.dayflow.data.remote.ApiConfig
 import com.example.dayflow.data.remote.api.ApiService
@@ -19,7 +19,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "${ApiConfig.SERVER_HOST}/api/"
+    private const val BASE_URL = "${ApiConfig.SERVER_HOST}/api/auth/"
 
     @Provides
     @Singleton

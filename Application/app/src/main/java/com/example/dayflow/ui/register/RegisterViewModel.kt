@@ -4,6 +4,7 @@ import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dayflow.data.local.Token.TokenManager
+import com.example.dayflow.data.local.UserPreferences
 import com.example.dayflow.data.remote.request.RegisterRequest
 import com.example.dayflow.repository.ApiRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,7 +31,8 @@ fun passwordStrength(p: String): Int {
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
     private val apiRepository: ApiRepository,
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val userPrefs: UserPreferences
 ) : ViewModel() {
 
     private val _fullName = MutableStateFlow("")
@@ -129,7 +131,6 @@ class RegisterViewModel @Inject constructor(
                 // RegisterRequest باید فیلدهای username و email رو داشته باشه
                 val response = apiRepository.register(
                     RegisterRequest(
-                        fullName = _fullName.value.trim(),
                         username = _username.value,
                         email = _email.value,
                         password = _password.value
@@ -138,22 +139,22 @@ class RegisterViewModel @Inject constructor(
 
                 if (response.isSuccessful) {
                     val body = response.body()
-                    if (body?.access != null && body.refresh != null) {
+                    if (body != null) {
                         tokenManager.saveSession(
-                            accessToken = body.access,
-                            refreshToken = body.refresh,
-                            phoneNumber = _username.value
+                            accessToken = body.accessToken,
+                            refreshToken = body.refreshToken ?: "",
+                            phoneNumber = body.user.username
                         )
-                        body.data?.full_name?.let { tokenManager.saveFullName(it) }
                     }
+                    userPrefs.saveProfile(
+                        name = _fullName.value.trim(),
+                        username = _username.value,
+                        bio = ""
+                    )
                     _isRegisterSuccess.value = true
-                } else {
-                    _errorMessage.value = when (response.code()) {
-                        409 -> "این نام کاربری یا ایمیل قبلاً ثبت شده."
-                        else -> "ثبت‌نام انجام نشد (کد ${response.code()})"
-                    }
                 }
             } catch (e: Exception) {
+                android.util.Log.e("REG", "register failed", e)
                 _errorMessage.value = "اتصال برقرار نشد. اینترنت یا آدرس سرور را چک کن."
             } finally {
                 _isLoading.value = false

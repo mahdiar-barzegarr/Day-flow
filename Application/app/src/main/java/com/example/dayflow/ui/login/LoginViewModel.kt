@@ -81,18 +81,17 @@ class LoginViewModel @Inject constructor(
 
                 if (response.isSuccessful) {
                     val body = response.body()
-                    if (body?.access != null && body.refresh != null) {
+                    if (body != null) {
                         tokenManager.saveSession(
-                            accessToken = body.access,
-                            refreshToken = body.refresh,
-                            phoneNumber = currentPhone
+                            accessToken = body.accessToken,
+                            refreshToken = body.refreshToken ?: "",
+                            phoneNumber = body.user.username
                         )
-                        body.full_name?.let { tokenManager.saveFullName(it) }
                     }
                     _isLoginSuccess.value = true
                 } else {
                     _errorMessage.value = when (response.code()) {
-                        400, 401 -> "شماره موبایل یا رمز عبور اشتباهه"
+                        400, 401 -> "نام کاربری/ایمیل یا رمز عبور اشتباه است"
                         else -> "خطا در ورود (کد ${response.code()})"
                     }
                 }

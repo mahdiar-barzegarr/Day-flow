@@ -28,17 +28,30 @@ import java.time.temporal.TemporalAdjusters
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
+@RequiresApi(Build.VERSION_CODES.O)
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val repository: HabitRepository,
     private val challengeRepository: ChallengeRepository
 ) : ViewModel() {
 
+
+
+
     @RequiresApi(Build.VERSION_CODES.O)
     private val today: Flow<LocalDate> = flow {
         while (true) {
             emit(LocalDate.now())
             delay(millisUntilNextDay().milliseconds)
+        }
+    }
+
+    init {
+        viewModelScope.launch {
+            combine(today, repository.observeHabits()) { t, habits ->
+                val day = t.toEpochDay()
+                habits.filter { h -> h.targetDays?.let { day >= h.createdAtEpochDay + it } == true }
+            }.collect { expired -> expired.forEach { repository.deleteHabit(it.id) } }
         }
     }
 
@@ -54,8 +67,6 @@ class HomeViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = buildHomeState(LocalDate.now(), emptyList(), emptyList())
     )
-
-
 
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -78,7 +89,14 @@ class HomeViewModel @Inject constructor(
     ) {
         if (title.isBlank()) return
         viewModelScope.launch {
-            challengeRepository.create(title, iconKey, isGroup, groupName, durationDays, startEpochDay)
+            challengeRepository.create(
+                title,
+                iconKey,
+                isGroup,
+                groupName,
+                durationDays,
+                startEpochDay
+            )
         }
     }
 
@@ -105,7 +123,6 @@ private fun habitStreak(doneDays: Set<Long>, today: Long): Int {
 }
 
 
-
 @RequiresApi(Build.VERSION_CODES.O)
 private fun buildHomeState(
     today: LocalDate,
@@ -124,20 +141,28 @@ private fun buildHomeState(
         return list.isNotEmpty() && list.all { isDone(it.id, day) }
     }
 
-
-
-    val habitItems = habits.map { habit ->
-        HabitUi(
-            id = habit.id,
-            title = habit.title,
-            iconKey = habit.iconKey,
-            goalText = habit.goalText,
-            isDoneToday = isDone(habit.id, todayEpoch),
-            streak = habitStreak(doneDays[habit.id].orEmpty(), todayEpoch),
-            targetDays = habit.targetDays,
-            reminderMinutes = habit.reminderMinutes,
-        )
+    fun isActiveOn(h: HabitEntity, day: Long): Boolean {
+        if (h.createdAtEpochDay > day) return false
+        val target = h.targetDays ?: return true
+        return day < h.createdAtEpochDay + target   // روز ۱ = روز ساخت، روز N = آخرین روز
     }
+
+
+    val habitItems = habits
+        .filter { isActiveOn(it, todayEpoch) }
+        .map { habit ->
+            HabitUi(
+                id = habit.id,
+                title = habit.title,
+                iconKey = habit.iconKey,
+                goalText = habit.goalText,
+                isDoneToday = isDone(habit.id, todayEpoch),
+                streak = habitStreak(doneDays[habit.id].orEmpty(), todayEpoch),
+                targetDays = habit.targetDays,
+                reminderMinutes = habit.reminderMinutes,
+            )
+        }
+
 
     val weekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.SATURDAY))
     val week = persianWeekLabels.mapIndexed { index, label ->

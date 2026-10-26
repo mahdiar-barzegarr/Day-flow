@@ -86,8 +86,8 @@ fun GroupsScreen(
     if (showCreate) {
         CreateGroupDialog(
             onDismiss = { showCreate = false },
-            onCreate = { name, privacy ->
-                viewModel.createGroup(name, privacy)
+            onCreate = { name, privacy, color, icon ->
+                viewModel.createGroup(name, privacy, color, icon)
                 showCreate = false
             }
         )
@@ -538,45 +538,119 @@ private fun GuestGroups(modifier: Modifier, onLogin: () -> Unit, onRegister: () 
 
 // ───────────────────────── دیالوگ‌ها ─────────────────────────
 
+private val GroupColors = listOf(
+    Color(0xFF3B82F6), Color(0xFF2DD4A0), Color(0xFFFFB84D),
+    Color(0xFF8B7CFF), Color(0xFFEF4444), Color(0xFFEC4899)
+)
+
+private fun GroupIcon.vector(): ImageVector = when (this) {
+    GroupIcon.GYM -> Icons.Outlined.FitnessCenter
+    GroupIcon.BOOK -> Icons.Outlined.MenuBook
+    GroupIcon.FIRE -> Icons.Outlined.LocalFireDepartment
+    GroupIcon.HEART -> Icons.Outlined.FavoriteBorder
+    GroupIcon.GROUP -> Icons.Outlined.Groups
+}
+
 @Composable
 private fun CreateGroupDialog(
     onDismiss: () -> Unit,
-    onCreate: (String, GroupPrivacy) -> Unit
+    onCreate: (name: String, privacy: GroupPrivacy, color: Color, icon: GroupIcon) -> Unit
 ) {
+    val colors = MaterialTheme.colorScheme
+    val extra = LocalExtraColors.current
     var name by remember { mutableStateOf("") }
     var privacy by remember { mutableStateOf(GroupPrivacy.PRIVATE) }
+    var color by remember { mutableStateOf(GroupColors[0]) }
+    var icon by remember { mutableStateOf(GroupIcon.GROUP) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("ساخت گروه جدید") },
+        containerColor = colors.surface,
+        titleContentColor = colors.onSurface,
+        textContentColor = colors.onSurface,
+        shape = RoundedCornerShape(24.dp),
+        title = { Text("ساخت گروه جدید", style = MaterialTheme.typography.titleLarge) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 OutlinedTextField(
                     value = name,
-                    onValueChange = { name = it },
+                    onValueChange = { if (it.length <= 30) name = it },
                     label = { Text("اسم گروه") },
                     singleLine = true,
+                    shape = RoundedCornerShape(14.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = colors.background,
+                        unfocusedContainerColor = colors.background,
+                        focusedBorderColor = colors.secondary,
+                        unfocusedBorderColor = colors.outline,
+                        focusedTextColor = colors.onSurface,
+                        unfocusedTextColor = colors.onSurface,
+                        focusedLabelColor = colors.secondary,
+                        unfocusedLabelColor = colors.onSurfaceVariant
+                    ),
                     modifier = Modifier.fillMaxWidth()
                 )
+
+                Text("آیکون", style = MaterialTheme.typography.labelLarge, color = colors.onSurfaceVariant)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FilterChip(
-                        selected = privacy == GroupPrivacy.PRIVATE,
-                        onClick = { privacy = GroupPrivacy.PRIVATE },
-                        label = { Text("خصوصی") }
-                    )
-                    FilterChip(
-                        selected = privacy == GroupPrivacy.CODE,
-                        onClick = { privacy = GroupPrivacy.CODE },
-                        label = { Text("با کد دعوت") }
-                    )
+                    GroupIcon.values().forEach { g ->
+                        val sel = g == icon
+                        Box(
+                            Modifier.size(44.dp).clip(RoundedCornerShape(12.dp))
+                                .background(if (sel) color.copy(alpha = 0.2f) else colors.background)
+                                .border(1.dp, if (sel) color else colors.outline, RoundedCornerShape(12.dp))
+                                .clickable { icon = g },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(g.vector(), null, tint = if (sel) color else colors.onSurfaceVariant,
+                                modifier = Modifier.size(22.dp))
+                        }
+                    }
+                }
+
+                Text("رنگ", style = MaterialTheme.typography.labelLarge, color = colors.onSurfaceVariant)
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    GroupColors.forEach { c ->
+                        Box(
+                            Modifier.size(32.dp).clip(CircleShape).background(c)
+                                .border(if (c == color) 3.dp else 0.dp, colors.onSurface, CircleShape)
+                                .clickable { color = c }
+                        )
+                    }
+                }
+
+                Text("حریم خصوصی", style = MaterialTheme.typography.labelLarge, color = colors.onSurfaceVariant)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(GroupPrivacy.PRIVATE to "خصوصی", GroupPrivacy.CODE to "با کد دعوت").forEach { (p, label) ->
+                        FilterChip(
+                            selected = privacy == p,
+                            onClick = { privacy = p },
+                            label = { Text(label) },
+                            shape = RoundedCornerShape(12.dp),
+                            colors = FilterChipDefaults.filterChipColors(
+                                containerColor = colors.background,
+                                labelColor = colors.onSurfaceVariant,
+                                selectedContainerColor = colors.secondary.copy(alpha = 0.2f),
+                                selectedLabelColor = colors.onSurface
+                            ),
+                            border = FilterChipDefaults.filterChipBorder(
+                                enabled = true, selected = privacy == p,
+                                borderColor = colors.outline,
+                                selectedBorderColor = colors.secondary
+                            )
+                        )
+                    }
                 }
             }
         },
         confirmButton = {
-            TextButton(onClick = { onCreate(name, privacy) }) { Text("ساخت") }
+            TextButton(
+                onClick = { onCreate(name.trim(), privacy, color, icon) },
+                enabled = name.isNotBlank()
+            ) { Text("ساخت", color = if (name.isNotBlank()) colors.secondary else colors.onSurfaceVariant) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("انصراف") }
+            TextButton(onClick = onDismiss) { Text("انصراف", color = colors.onSurfaceVariant) }
         }
     )
 }

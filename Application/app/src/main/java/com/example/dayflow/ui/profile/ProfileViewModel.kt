@@ -13,6 +13,7 @@ import com.example.dayflow.ui.challenges.effectiveStatus
 import com.example.dayflow.ui.challenges.todayEpochDayFlow
 import com.example.dayflow.utilities.overallStreak
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -35,6 +36,18 @@ class ProfileViewModel @Inject constructor(
     private val isLoggedIn = tokenManager.accessTokenFlow
         .map { !it.isNullOrBlank() }
         .distinctUntilChanged()
+
+    private val _isLoggingOut = MutableStateFlow(false)
+    val isLoggingOut: StateFlow<Boolean> = _isLoggingOut
+
+    fun logout() {
+        viewModelScope.launch {
+            _isLoggingOut.value = true
+            delay(1000)
+            tokenManager.clearSession()
+            _isLoggingOut.value = false
+        }
+    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private val habitStats = combine(
@@ -75,9 +88,6 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch { userPrefs.saveProfile(name, username, bio) }
     }
 
-    fun logout() {
-        viewModelScope.launch { tokenManager.clearSession() }
-    }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)

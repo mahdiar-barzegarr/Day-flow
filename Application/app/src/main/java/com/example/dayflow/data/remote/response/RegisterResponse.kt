@@ -3,12 +3,15 @@ package com.example.dayflow.data.remote.response
 
 
 data class RegisterResponse(
-    val data: RegisteredUserData?,
-    val access: String?,
-    val refresh: String?
+    val message: String,
+    val user: UserDto,
+    val accessToken: String,
+    val refreshToken: String? = null
 )
 
-data class RegisteredUserData(
-    val full_name: String?,
-    val phone_number: String?
+data class UserDto(
+    val id: Int,
+    val username: String,
+    val email: String,
+    val createdAt: String
 )

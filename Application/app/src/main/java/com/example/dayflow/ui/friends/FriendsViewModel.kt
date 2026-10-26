@@ -3,20 +3,24 @@ package com.example.dayflow.ui.friends
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.dayflow.data.local.Token.TokenManager
 import com.example.dayflow.models.FriendRequest
 import com.example.dayflow.models.FriendStatus
 import com.example.dayflow.models.FriendsUiState
 import com.example.dayflow.models.UserResult
 import com.example.dayflow.repository.FriendsRepository
 import com.example.dayflow.repository.SessionManager
+import dagger.hilt.android.lifecycle.HiltViewModel
+import jakarta.inject.Inject
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 @OptIn(FlowPreview::class)
-class FriendsViewModel(
+@HiltViewModel
+class FriendsViewModel @Inject constructor(
     private val repo: FriendsRepository,
-    session: SessionManager
+    tokenManager: TokenManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(FriendsUiState())
@@ -25,13 +29,6 @@ class FriendsViewModel(
     private val queryFlow = MutableStateFlow("")
 
     init {
-        viewModelScope.launch {
-            session.isLoggedIn.collect { logged ->
-                _state.update { it.copy(isLoggedIn = logged) }
-                if (logged) loadRequests()
-            }
-        }
-        // جستجو با ۴۰۰ میلی‌ثانیه تأخیر تا برای هر حرف درخواست نرود
         viewModelScope.launch {
             queryFlow.debounce(400).distinctUntilChanged().collect { q ->
                 val clean = q.trim().removePrefix("@")
@@ -43,6 +40,16 @@ class FriendsViewModel(
                     _state.update { it.copy(results = res, isSearching = false) }
                 }
             }
+        }
+        viewModelScope.launch {
+            tokenManager.accessTokenFlow
+                .map { !it.isNullOrBlank() }
+                .distinctUntilChanged()
+                .collect { logged ->
+                    _state.update { it.copy(isLoggedIn = logged) }
+                    if (logged) loadRequests()
+                    else _state.value = FriendsUiState()
+                }
         }
     }
 

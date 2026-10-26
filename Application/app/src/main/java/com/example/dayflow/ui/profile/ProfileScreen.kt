@@ -14,6 +14,10 @@ import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,7 +29,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.dayflow.navigation.Routes
 import com.example.dayflow.ui.challenges.ChallengeProgressBar
@@ -51,6 +58,9 @@ fun ProfileScreen(
 ) {
     val colors = MaterialTheme.colorScheme
 
+    val isLoggingOut by viewModel.isLoggingOut.collectAsStateWithLifecycle()
+    var showLogoutDialog by remember { mutableStateOf(false) }
+
     Scaffold(
         containerColor = colors.background,
         bottomBar = { DayFlowBottomBar(navController) }
@@ -70,7 +80,10 @@ fun ProfileScreen(
                 ProfileHeader(state, onEditProfile)
                 StatsRow(state)
                 ActiveChallenges(state, onSeeAllChallenges, onChallengeClick)
-                SettingsSection(state, onSettingClick, { viewModel.logout() })
+                SettingsSection(
+                    onRemindersClick = { navController.navigate(Routes.NOTIFICATIONS) },
+                    onLogout = { showLogoutDialog = true }
+                )
                 Text(
                     "اطلاعات شخصی مثل ایمیل به‌طور پیش‌فرض برای دیگران نمایش داده نمی‌شود.",
                     style = MaterialTheme.typography.bodySmall,
@@ -87,6 +100,48 @@ fun ProfileScreen(
                     onAboutClick = onAboutClick,
                     onNtifClick = {navController.navigate(Routes.NOTIFICATIONS)}
                 )
+            }
+        }
+    }
+
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            containerColor = colors.surface,
+            titleContentColor = colors.onSurface,
+            textContentColor = colors.onSurfaceVariant,
+            shape = RoundedCornerShape(20.dp),
+            title = { Text("خروج از حساب") },
+            text = { Text("آیا مطمئنی که می‌خواهی از حساب خارج شوی؟") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showLogoutDialog = false
+                    viewModel.logout()
+                }) {
+                    Text("بله، خروج", color = colors.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog = false }) {
+                    Text("انصراف", color = colors.onSurfaceVariant)
+                }
+            }
+        )
+    }
+
+    if (isLoggingOut) {
+        Dialog(
+            onDismissRequest = {},
+            properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(colors.surface),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = colors.secondary)
             }
         }
     }
@@ -288,18 +343,18 @@ private fun ProfileHeader(state: ProfileUiState, onEdit: () -> Unit) {
             )
         }
         Spacer(Modifier.height(6.dp))
-        Row(
-            modifier = Modifier
-                .clip(shape)
-                .border(1.dp, colors.outline, shape)
-                .clickable(onClick = onEdit)
-                .padding(horizontal = 24.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text("ویرایش پروفایل", style = MaterialTheme.typography.labelLarge, color = colors.onSurface)
-            Icon(Icons.Outlined.Edit, null, tint = colors.onSurface, modifier = Modifier.size(16.dp))
-        }
+//        Row(
+//            modifier = Modifier
+//                .clip(shape)
+//                .border(1.dp, colors.outline, shape)
+//                .clickable(onClick = onEdit)
+//                .padding(horizontal = 24.dp, vertical = 12.dp),
+//            verticalAlignment = Alignment.CenterVertically,
+//            horizontalArrangement = Arrangement.spacedBy(8.dp)
+//        ) {
+//            Text("ویرایش پروفایل", style = MaterialTheme.typography.labelLarge, color = colors.onSurface)
+//            Icon(Icons.Outlined.Edit, null, tint = colors.onSurface, modifier = Modifier.size(16.dp))
+//        }
     }
 }
 
@@ -402,32 +457,23 @@ private data class SettingItem(
 
 @Composable
 private fun SettingsSection(
-    state: ProfileUiState,
-    onSettingClick: (ProfileSetting) -> Unit,
+    onRemindersClick: () -> Unit,
     onLogout: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
-    val items = listOf(
-        SettingItem(ProfileSetting.Reminders, "مدیریت یادآورها", Icons.Outlined.Notifications),
-        SettingItem(ProfileSetting.Privacy, "حریم خصوصی", Icons.Outlined.Shield),
-        SettingItem(ProfileSetting.Theme, "ظاهر برنامه", Icons.Outlined.DarkMode, state.themeLabel),
-        SettingItem(ProfileSetting.Account, "حساب کاربری", Icons.Outlined.Tune)
-    )
 
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         SectionHeader("تنظیمات")
         FlowSurface {
-            items.forEach { item ->
-                SettingRow(
-                    icon = item.icon,
-                    title = item.title,
-                    value = item.value,
-                    tint = colors.onSurface,
-                    showChevron = true,
-                    onClick = { onSettingClick(item.setting) }
-                )
-                Divider()
-            }
+            SettingRow(
+                icon = Icons.Outlined.Notifications,
+                title = "مدیریت یادآورها",
+                value = null,
+                tint = colors.onSurface,
+                showChevron = true,
+                onClick = onRemindersClick
+            )
+            Divider()
             SettingRow(
                 icon = Icons.AutoMirrored.Outlined.Logout,
                 title = "خروج از حساب",

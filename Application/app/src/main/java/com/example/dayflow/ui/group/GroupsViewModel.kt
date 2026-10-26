@@ -1,5 +1,6 @@
 package com.example.dayflow.ui.group
 
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dayflow.data.local.*
@@ -73,7 +74,7 @@ class GroupsViewModel @Inject constructor(
         query.value = value
     }
 
-    fun createGroup(name: String, privacy: GroupPrivacy) {
+    fun createGroup(name: String, privacy: GroupPrivacy, color: Color, icon: GroupIcon) {
         if (name.isBlank()) {
             _message.value = "اسم گروه را وارد کن."
             return

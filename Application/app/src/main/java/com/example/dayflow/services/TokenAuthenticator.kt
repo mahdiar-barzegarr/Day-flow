@@ -51,10 +51,10 @@ class TokenAuthenticator @Inject constructor(
 
                     if (refreshResponse.isSuccessful) {
                         val body = refreshResponse.body() ?: return@withLock null
-                        tokenManager.updateAccessTokenBlocking(body.access)
-                        tokenManager.updateRefreshTokenBlocking(body.refresh)
+                        tokenManager.updateAccessTokenBlocking(body.accessToken)
+                        tokenManager.updateRefreshTokenBlocking(body.refreshToken)
                         response.request.newBuilder()
-                            .header("Authorization", "Bearer ${body.access}")
+                            .header("Authorization", "Bearer ${body.accessToken}")
                             .build()
                     } else {
                         if (refreshResponse.code() in listOf(400, 401, 403)) tokenManager.clearSession()

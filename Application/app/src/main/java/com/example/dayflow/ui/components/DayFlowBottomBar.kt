@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Flag
 import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.NoteAlt
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.PersonAdd
 import androidx.compose.material3.Icon
@@ -43,8 +44,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 enum class BottomTab(val route: String, val label: String, val icon: ImageVector) {
     Home("home", "خانه", Icons.Outlined.Home),
     Challenges("challenges", "چالش‌ها", Icons.Outlined.Flag),
-    Groups("groups", "گروه‌ها", Icons.Outlined.Groups),
-    Friends("friends", "دوستان", Icons.Outlined.PersonAdd),
+    Notes("note","یادداشت ها",Icons.Outlined.NoteAlt),
     Profile("profile", "پروفایل", Icons.Outlined.Person)
 }
 

@@ -136,17 +136,17 @@ fun NavigationGraph(
             )
         }
 
-        composable(Routes.GROUP) {
-            GroupsScreen(navController = navController)
-        }
+//        composable(Routes.GROUP) {
+//            GroupsScreen(navController = navController)
+//        }
 
-        composable(Routes.FRIENDS) {
-            FriendsScreen(
-                navController = navController,
-                onLoginClick = { navController.navigate("login") },
-                onRegisterClick = { navController.navigate("register") }
-            )
-        }
+//        composable(Routes.FRIENDS) {
+//            FriendsScreen(
+//                navController = navController,
+//                onLoginClick = { navController.navigate("login") },
+//                onRegisterClick = { navController.navigate("register") }
+//            )
+//        }
 
         composable(Routes.NOTIFICATIONS) {
             NotificationSettingsScreen()

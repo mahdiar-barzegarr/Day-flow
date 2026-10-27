@@ -136,10 +136,10 @@ private fun TabsRow(state: FriendsUiState, onTab: (Int) -> Unit) {
             .background(MaterialTheme.colorScheme.surface).padding(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        // ترتیب در RTL: دوستان (راست) ← درخواست‌ها ← افزودن (چپ)
-        TabItem("دوستان ${state.friendsCount}", state.selectedTab == 0, Modifier.weight(1f)) { onTab(0) }
+        TabItem("افزودن", state.selectedTab == 2, Modifier.weight(1f)) { onTab(0) }
         TabItem("درخواست‌ها", state.selectedTab == 1, Modifier.weight(1f), badge = reqCount) { onTab(1) }
-        TabItem("افزودن", state.selectedTab == 2, Modifier.weight(1f)) { onTab(2) }
+        TabItem("دوستان ${state.friendsCount}", state.selectedTab == 0, Modifier.weight(1f)) { onTab(2) }
+
     }
 }
 

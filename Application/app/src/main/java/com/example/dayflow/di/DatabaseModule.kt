@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.example.dayflow.data.local.ChallengeDao
 import com.example.dayflow.data.local.DayFlowDatabase
 import com.example.dayflow.data.local.HabitDao
+import com.example.dayflow.data.local.note.NoteDao
 import com.example.dayflow.ui.group.GroupDao
 import dagger.Module
 import dagger.Provides
@@ -29,6 +30,11 @@ object DatabaseModule {
 
     @Provides
     fun provideChallengeDao(database: DayFlowDatabase): ChallengeDao = database.challengeDao()
+
+    @Provides
+    fun provideNoteDao(
+        database: DayFlowDatabase
+    ): NoteDao = database.noteDao()
 
     @Provides
     @Singleton

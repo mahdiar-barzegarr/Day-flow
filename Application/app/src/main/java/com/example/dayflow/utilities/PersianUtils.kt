@@ -39,3 +39,14 @@ fun LocalDate.toPersianDayMonth(): String =
 
 fun LocalDate.toPersianDayMonthYear(): String =
     SimpleDateFormat("d MMMM y", persianLocale).format(toDate())
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun Long.toPersianDate(): String {
+    val date = java.time.Instant.ofEpochMilli(this)
+        .atZone(java.time.ZoneId.systemDefault())
+        .toLocalDate()
+
+    val persianDate = date.toPersianFullDate()
+
+    return persianDate
+}

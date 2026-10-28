@@ -27,6 +27,8 @@ import com.example.dayflow.ui.friends.FriendsViewModel
 import com.example.dayflow.ui.group.GroupsScreen
 import com.example.dayflow.ui.home.HomeScreen
 import com.example.dayflow.ui.login.LoginScreen
+import com.example.dayflow.ui.note.NoteEditorScreen
+import com.example.dayflow.ui.note.NotesScreen
 import com.example.dayflow.ui.notification.NotificationSettingsScreen
 import com.example.dayflow.ui.profile.ProfileScreen
 import com.example.dayflow.ui.profile.ProfileViewModel
@@ -50,6 +52,8 @@ object Routes {
     const val FRIENDS = "friends"
 
     const val NOTIFICATIONS = "notifications"
+
+    const val NOTE = "note"
 
 }
 
@@ -150,6 +154,20 @@ fun NavigationGraph(
 
         composable(Routes.NOTIFICATIONS) {
             NotificationSettingsScreen()
+        }
+
+        composable(Routes.NOTE) { NotesScreen(navController) }
+
+        composable(
+            route = "note_editor?noteId={noteId}",
+            arguments = listOf(
+                navArgument("noteId") {
+                    type = NavType.LongType
+                    defaultValue = -1L
+                }
+            )
+        ) {
+            NoteEditorScreen(onBack = { navController.popBackStack() })
         }
     }
 }

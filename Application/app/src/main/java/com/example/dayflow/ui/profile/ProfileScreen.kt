@@ -245,15 +245,6 @@ private fun GuestContent(
 
     FlowSurface {
         SettingRow(
-            icon = Icons.Outlined.DarkMode,
-            title = "ظاهر برنامه",
-            value = state.themeLabel,
-            tint = colors.onSurface,
-            showChevron = true,
-            onClick = onThemeClick
-        )
-        Divider()
-        SettingRow(
             icon = Icons.Outlined.Info,
             title = "درباره StreakUp",
             value = null,
@@ -298,7 +289,6 @@ private fun BenefitRow(icon: ImageVector, text: String, tint: Color) {
     }
 }
 
-// ───────────────────────── حالت لاگین‌شده ─────────────────────────
 
 @Composable
 private fun ProfileHeader(state: ProfileUiState, onEdit: () -> Unit) {
@@ -343,18 +333,6 @@ private fun ProfileHeader(state: ProfileUiState, onEdit: () -> Unit) {
             )
         }
         Spacer(Modifier.height(6.dp))
-//        Row(
-//            modifier = Modifier
-//                .clip(shape)
-//                .border(1.dp, colors.outline, shape)
-//                .clickable(onClick = onEdit)
-//                .padding(horizontal = 24.dp, vertical = 12.dp),
-//            verticalAlignment = Alignment.CenterVertically,
-//            horizontalArrangement = Arrangement.spacedBy(8.dp)
-//        ) {
-//            Text("ویرایش پروفایل", style = MaterialTheme.typography.labelLarge, color = colors.onSurface)
-//            Icon(Icons.Outlined.Edit, null, tint = colors.onSurface, modifier = Modifier.size(16.dp))
-//        }
     }
 }
 

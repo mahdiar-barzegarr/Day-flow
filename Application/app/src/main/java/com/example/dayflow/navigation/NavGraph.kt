@@ -5,11 +5,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -18,18 +14,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.dayflow.repository.FakeFriendsRepository
-import com.example.dayflow.repository.FakeSessionManager
 import com.example.dayflow.ui.challenges.ChallengeDetailScreen
 import com.example.dayflow.ui.challenges.ChallengesScreen
-import com.example.dayflow.ui.friends.FriendsScreen
-import com.example.dayflow.ui.friends.FriendsViewModel
-import com.example.dayflow.ui.group.GroupsScreen
 import com.example.dayflow.ui.home.HomeScreen
 import com.example.dayflow.ui.login.LoginScreen
 import com.example.dayflow.ui.note.NoteEditorScreen
 import com.example.dayflow.ui.note.NotesScreen
 import com.example.dayflow.ui.notification.NotificationSettingsScreen
+import com.example.dayflow.ui.profile.AboutScreen
 import com.example.dayflow.ui.profile.ProfileScreen
 import com.example.dayflow.ui.profile.ProfileViewModel
 import com.example.dayflow.ui.register.RegisterScreen
@@ -54,6 +46,8 @@ object Routes {
     const val NOTIFICATIONS = "notifications"
 
     const val NOTE = "note"
+
+    const val ABOUT = "about"
 
 }
 
@@ -88,7 +82,9 @@ fun NavigationGraph(
             HomeScreen(
                 navController = navController,
                 onCreateChallenge = { /*TODO*/ },
-                onCreateGroup = { /*TODO*/ },
+                onCreateNote = {
+                    navController.navigate(Routes.NOTE)
+                },
                 onNotificationsClick = { /*TODO*/ }
             )
         }
@@ -140,20 +136,9 @@ fun NavigationGraph(
             )
         }
 
-//        composable(Routes.GROUP) {
-//            GroupsScreen(navController = navController)
-//        }
-
-//        composable(Routes.FRIENDS) {
-//            FriendsScreen(
-//                navController = navController,
-//                onLoginClick = { navController.navigate("login") },
-//                onRegisterClick = { navController.navigate("register") }
-//            )
-//        }
 
         composable(Routes.NOTIFICATIONS) {
-            NotificationSettingsScreen()
+            NotificationSettingsScreen(navController)
         }
 
         composable(Routes.NOTE) { NotesScreen(navController) }
@@ -169,5 +154,8 @@ fun NavigationGraph(
         ) {
             NoteEditorScreen(onBack = { navController.popBackStack() })
         }
+
+
+        composable(Routes.ABOUT) { AboutScreen(navController) }
     }
 }

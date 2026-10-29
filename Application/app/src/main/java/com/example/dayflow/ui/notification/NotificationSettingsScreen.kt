@@ -10,16 +10,36 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Alarm
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Schedule
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -31,6 +51,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 
 private class NPalette(
     val bg: Color, val card: Color, val outline: Color,
@@ -52,7 +74,7 @@ private val LightPalette = NPalette(
 
 @Composable
 fun NotificationSettingsScreen(
-    onBack: (() -> Unit)? = null,
+    navController: NavController,
     vm: NotificationSettingsViewModel = hiltViewModel()
 ) {
     val ctx = LocalContext.current
@@ -80,83 +102,93 @@ fun NotificationSettingsScreen(
         }
     }
 
-    Column(
-        Modifier
-            .fillMaxSize()
-            .background(c.bg)
-            .statusBarsPadding()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Header
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            if (onBack != null) {
-                IconButton(onClick = onBack) {
-                    Icon(Icons.AutoMirrored.Rounded.ArrowBack, null, tint = c.onSurface)
+    val colors = MaterialTheme.colorScheme
+
+    Scaffold(
+        containerColor = colors.background
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .statusBarsPadding()
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        )
+        {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                IconButton({
+                    navController.popBackStack()
+                }) {
+                    Icon(
+                        Icons.AutoMirrored.Outlined.ArrowBack, null,
+                        tint = colors.onSurface,
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(CircleShape)
+                    )
                 }
-                Spacer(Modifier.width(4.dp))
+                Spacer(Modifier.width(12.dp))
+                Column(
+                    Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    Text("مدیریت یاداوری ها", style = MaterialTheme.typography.titleLarge, color = colors.onSurface)
+                    Text("انتخاب کن چطور عادت هات یاداوری بشن هت", style = MaterialTheme.typography.bodyMedium, color = colors.onSurface)
+                }
             }
-            Column {
+
+            Spacer(Modifier.height(8.dp))
+
+            OptionCard(
+                c = c,
+                icon = Icons.Rounded.Alarm,
+                accent = c.highlight,
+                title = "الارم",
+                description = "سر ساعت هر عادت، گوشی با صدای الارم و عنوان عادت زنگ می‌زنه.",
+                checked = vm.alarmOn,
+                onChange = {
+                    if (it) ensurePermissions()
+                    vm.setAlarm(it)
+                }
+            )
+
+            OptionCard(
+                c = c,
+                icon = Icons.Rounded.Notifications,
+                accent = c.secondary,
+                title = "نوتیفیکیشن",
+                description = "سر ساعت هر عادت فقط یک نوتیف ساده برات میاد.",
+                checked = vm.notifOn,
+                onChange = {
+                    if (it) ensurePermissions()
+                    vm.setNotif(it)
+                }
+            )
+
+            // Info card
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(c.primary.copy(alpha = 0.10f))
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(Icons.Rounded.Schedule, null, tint = c.primary)
                 Text(
-                    "مدیریت اعلان‌ها",
-                    style = MaterialTheme.typography.headlineSmall,
+                    "اگه تا ساعت ۲۱:۰۰ عادت یا چالش انجام‌نشده داشته باشی، هر روز یه پیام یادآوری برات میاد.",
+                    style = MaterialTheme.typography.bodySmall,
                     color = c.onSurface
                 )
-                Text(
-                    "انتخاب کن عادت‌هات چطور یادآوری بشن",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = c.variant
-                )
             }
-        }
-
-        Spacer(Modifier.height(8.dp))
-
-        OptionCard(
-            c = c,
-            icon = Icons.Rounded.Alarm,
-            accent = c.highlight,
-            title = "الارم",
-            description = "سر ساعت هر عادت، گوشی با صدای الارم و عنوان عادت زنگ می‌زنه.",
-            checked = vm.alarmOn,
-            onChange = {
-                if (it) ensurePermissions()
-                vm.setAlarm(it)
-            }
-        )
-
-        OptionCard(
-            c = c,
-            icon = Icons.Rounded.Notifications,
-            accent = c.secondary,
-            title = "نوتیفیکیشن",
-            description = "سر ساعت هر عادت فقط یک نوتیف ساده برات میاد.",
-            checked = vm.notifOn,
-            onChange = {
-                if (it) ensurePermissions()
-                vm.setNotif(it)
-            }
-        )
-
-        // Info card
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(20.dp))
-                .background(c.primary.copy(alpha = 0.10f))
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Icon(Icons.Rounded.Schedule, null, tint = c.primary)
-            Text(
-                "اگه تا ساعت ۲۱:۰۰ عادت یا چالش انجام‌نشده داشته باشی، هر روز یه پیام یادآوری برات میاد.",
-                style = MaterialTheme.typography.bodySmall,
-                color = c.onSurface
-            )
         }
     }
+
 }
 
 @Composable

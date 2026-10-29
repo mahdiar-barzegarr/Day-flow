@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import com.example.dayflow.di.MutePrefs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -14,6 +15,7 @@ class ReminderReceiver : BroadcastReceiver() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onReceive(ctx: Context, intent: Intent) {
+        if (MutePrefs.isMuted(ctx)) return
         val prefs = NotificationPrefs(ctx)
         Log.d("Reminder", "received ${intent.getStringExtra(ReminderScheduler.KIND)}")
         NotificationHelper.createChannels(ctx)

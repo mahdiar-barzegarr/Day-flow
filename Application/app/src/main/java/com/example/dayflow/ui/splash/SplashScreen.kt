@@ -42,7 +42,7 @@ import com.example.dayflow.ui.theme.LocalExtraColors
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 
-private const val SPLASH_DURATION_MS = 3500
+private const val SPLASH_DURATION_MS = 2000
 private const val SPLASH_END_DELAY_MS = 250L
 
 @Composable
@@ -65,7 +65,6 @@ fun SplashScreen(onFinished: () -> Unit) {
             .fillMaxSize()
             .background(colors.background)
             .drawBehind {
-                // درخشش ملایم بنفش پشت لوگو
                 drawRect(
                     brush = Brush.radialGradient(
                         colors = listOf(colors.primary.copy(alpha = 0.14f), Color.Transparent),
@@ -82,7 +81,6 @@ fun SplashScreen(onFinished: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // آیکون لوگو
             Box(
                 modifier = Modifier
                     .size(120.dp)
@@ -100,7 +98,6 @@ fun SplashScreen(onFinished: () -> Unit) {
 
             Spacer(Modifier.height(24.dp))
 
-            // اسم اپ: کلمه‌ی اول سفید، کلمه‌ی دوم آبی
             Text(
                 text = buildAnnotatedString {
                     withStyle(SpanStyle(color = colors.onSurface)) { append("Day") }
@@ -119,7 +116,6 @@ fun SplashScreen(onFinished: () -> Unit) {
             )
         }
 
-        // نوار لودینگ پایین صفحه
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)

@@ -135,25 +135,6 @@ fun CreateChallengeSheet(
                 )
             }
 
-            LabeledSection("نوع چالش") {
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    TypeCard("شخصی", Icons.Outlined.Person, !isGroup, Modifier.weight(1f)) { isGroup = false }
-                    TypeCard("گروهی", Icons.Outlined.Groups, isGroup, Modifier.weight(1f)) { isGroup = true }
-                }
-                if (isGroup) {
-                    Spacer(Modifier.height(10.dp))
-                    OutlinedTextField(
-                        value = groupName,
-                        onValueChange = { if (it.length <= 30) groupName = it },
-                        placeholder = { Text("اسم گروه (اختیاری)", style = MaterialTheme.typography.bodyMedium) },
-                        singleLine = true,
-                        shape = RoundedCornerShape(16.dp),
-                        textStyle = MaterialTheme.typography.bodyLarge,
-                        colors = challengeFieldColors(),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
 
             LabeledSection("آیکن", "اختیاری") {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {

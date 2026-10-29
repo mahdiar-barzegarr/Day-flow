@@ -26,7 +26,8 @@ data class HomeUiState(
     val totalCount: Int = 0,
     val streakDays: Int = 0,
     val week: List<WeekDayUi> = emptyList(),
-    val habits: List<HabitUi> = emptyList()
+    val habits: List<HabitUi> = emptyList(),
+    val isMuted: Boolean = false
 ) {
     val progress: Float
         get() = if (totalCount == 0) 0f else doneCount / totalCount.toFloat()

@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dayflow.data.local.*
 import com.example.dayflow.data.local.Token.TokenManager
+import com.example.dayflow.di.NotesRepository
 import com.example.dayflow.repository.ChallengeRepository
 import com.example.dayflow.repository.HabitRepository
 import com.example.dayflow.ui.challenges.buildChallengeUi
@@ -19,35 +20,20 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
-private data class HabitStats(val streak: Int, val totalDone: Int)
-private data class ChallengeStats(val completed: Int, val active: List<ProfileChallengeUi>)
+private data class HabitStats(val streak: Int, val totalDone: Int, val count: Int)
+private data class ChallengeStats(val completed: Int, val activeCount: Int, val active: List<ProfileChallengeUi>)
+private data class NoteStats(val total: Int, val recent: List<ProfileNoteUi>)
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     habitRepository: HabitRepository,
     challengeRepository: ChallengeRepository,
-    private val userPrefs: UserPreferences,
-    private val tokenManager: TokenManager
+    notesRepository: NotesRepository,
+    private val userPrefs: UserPreferences
 ) : ViewModel() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private val todayFlow = todayEpochDayFlow()
-
-    private val isLoggedIn = tokenManager.accessTokenFlow
-        .map { !it.isNullOrBlank() }
-        .distinctUntilChanged()
-
-    private val _isLoggingOut = MutableStateFlow(false)
-    val isLoggingOut: StateFlow<Boolean> = _isLoggingOut
-
-    fun logout() {
-        viewModelScope.launch {
-            _isLoggingOut.value = true
-            delay(1000)
-            tokenManager.clearSession()
-            _isLoggingOut.value = false
-        }
-    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private val habitStats = combine(
@@ -56,7 +42,7 @@ class ProfileViewModel @Inject constructor(
         habitRepository.observeTotalDone(),
         todayFlow
     ) { habits, logs, total, day ->
-        HabitStats(streak = overallStreak(habits, logs, day), totalDone = total)
+        HabitStats(streak = overallStreak(habits, logs, day), totalDone = total, count = habits.size)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -64,30 +50,51 @@ class ProfileViewModel @Inject constructor(
         challengeRepository.observeChallenges(),
         challengeRepository.observeAllLogs(),
         todayFlow
-    ) { challenges, logs, day ->
-        buildChallengeStats(challenges, logs, day)
+    ) { challenges, logs, day -> buildChallengeStats(challenges, logs, day) }
+
+    private val noteStats = notesRepository.getAllNotes().map { notes ->
+        NoteStats(
+            total = notes.size,
+            recent = notes
+                .sortedByDescending { it.updatedAt }
+                .take(3)
+                .map {
+                    ProfileNoteUi(
+                        id = it.id,
+                        title = it.title.ifBlank { "بدون عنوان" },
+                        preview = it.content.take(80)
+                    )
+                }
+        )
+    }
+
+    fun saveName(name: String) {
+        viewModelScope.launch {
+            userPrefs.saveProfile(name.trim(), "", uiState.value.bio)
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     val uiState: StateFlow<ProfileUiState> = combine(
-        userPrefs.profile, habitStats, challengeStats, isLoggedIn
-    ) { profile, habits, challenges, loggedIn ->
+        userPrefs.profile, habitStats, challengeStats, noteStats
+    ) { profile, habits, challenges, notes ->
         ProfileUiState(
-            isLoggedIn = loggedIn,
             name = profile.name,
-            username = profile.username,
             bio = profile.bio,
             streakDays = habits.streak,
             totalHabitsDone = habits.totalDone,
             completedChallenges = challenges.completed,
-            activeChallenges = challenges.active
+            activeChallenges = challenges.active,
+            totalNotes = notes.total,
+            recentNotes = notes.recent,
+            totalHabits = habits.count,
+            activeChallengesCount = challenges.activeCount,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProfileUiState())
 
     fun saveProfile(name: String, username: String, bio: String) {
         viewModelScope.launch { userPrefs.saveProfile(name, username, bio) }
     }
-
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -100,6 +107,7 @@ private fun buildChallengeStats(
     val withStatus = challenges.map { it to it.effectiveStatus(today) }
 
     return ChallengeStats(
+        activeCount = withStatus.count { it.second == ChallengeStatus.ACTIVE },
         completed = withStatus.count { it.second == ChallengeStatus.COMPLETED },
         active = withStatus
             .filter { it.second == ChallengeStatus.ACTIVE }

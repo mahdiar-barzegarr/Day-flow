@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dayflow.data.local.HabitEntity
 import com.example.dayflow.data.local.HabitLogEntity
+import com.example.dayflow.di.MutePrefs
 import com.example.dayflow.repository.ChallengeRepository
 import com.example.dayflow.repository.HabitRepository
 import com.example.dayflow.utilities.persianDayOfMonth
@@ -32,7 +33,8 @@ import kotlin.time.Duration.Companion.milliseconds
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val repository: HabitRepository,
-    private val challengeRepository: ChallengeRepository
+    private val challengeRepository: ChallengeRepository,
+    private val mutePrefs: MutePrefs
 ) : ViewModel() {
 
 
@@ -55,17 +57,21 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun toggleMute() = mutePrefs.toggle()
+
     @RequiresApi(Build.VERSION_CODES.O)
     val uiState: StateFlow<HomeUiState> = combine(
         today,
         repository.observeHabits(),
-        repository.observeLogs()
-    ) { today, habits, logs ->
-        buildHomeState(today, habits, logs)
+        repository.observeLogs(),
+        mutePrefs.muted
+    ) { today, habits, logs, muted ->
+        buildHomeState(today, habits, logs).copy(isMuted = muted)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = buildHomeState(LocalDate.now(), emptyList(), emptyList())
+            .copy(isMuted = mutePrefs.muted.value)
     )
 
 

@@ -2,8 +2,19 @@ package com.example.dayflow.ui.home
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -34,9 +45,10 @@ import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.EventAvailable
 import androidx.compose.material.icons.outlined.FitnessCenter
 import androidx.compose.material.icons.outlined.Flag
-import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.LocalFireDepartment
+import androidx.compose.material.icons.outlined.NoteAlt
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.NotificationsOff
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.WaterDrop
@@ -48,6 +60,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.collectAsState
@@ -63,17 +76,21 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.dayflow.ui.challenges.CreateChallengeSheet
 import com.example.dayflow.ui.components.DayFlowBottomBar
 import com.example.dayflow.ui.theme.LocalExtraColors
 import com.example.dayflow.utilities.toPersianDigits
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -82,7 +99,7 @@ fun HomeScreen(
     navController: NavController,
     viewModel: HomeViewModel = hiltViewModel(),
     onCreateChallenge: () -> Unit = {},
-    onCreateGroup: () -> Unit = {},
+    onCreateNote: () -> Unit = {},
     onNotificationsClick: () -> Unit = {}
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -102,8 +119,8 @@ fun HomeScreen(
             onDeleteHabit = viewModel::deleteHabit,
             onCreateHabit = { showAddDialog = true },
             onCreateChallenge = { showCreate = true },
-            onCreateGroup = onCreateGroup,
-            onNotificationsClick = onNotificationsClick
+            onCreateNote = onCreateNote,
+            onToggleMute = viewModel::toggleMute
         )
     }
 
@@ -130,8 +147,8 @@ private fun HomeContent(
     onDeleteHabit: (Long) -> Unit,
     onCreateHabit: () -> Unit,
     onCreateChallenge: () -> Unit,
-    onCreateGroup: () -> Unit,
-    onNotificationsClick: () -> Unit
+    onCreateNote: () -> Unit,
+    onToggleMute:() -> Unit
 ) {
     Column(
         modifier = modifier
@@ -140,12 +157,11 @@ private fun HomeContent(
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        HomeHeader(state, onNotificationsClick)
+        HomeHeader(state, onToggleMute)
         ProgressCard(state)
         WeekSection(state)
         HabitsSection(state, onToggleHabit, onDeleteHabit)
-        GroupSection()
-        QuickActions(onCreateHabit, onCreateChallenge, onCreateGroup)
+        QuickActions(onCreateHabit, onCreateChallenge, onCreateNote)
     }
 }
 
@@ -203,11 +219,74 @@ private fun HomeHeader(state: HomeUiState, onNotificationsClick: () -> Unit) {
                 .clickable(onClick = onNotificationsClick),
             contentAlignment = Alignment.Center
         ) {
+
+
+            MuteBellButton(muted = state.isMuted, onClick = onNotificationsClick)
+        }
+    }
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+private fun MuteBellButton(muted: Boolean, onClick: () -> Unit) {
+    val colors = MaterialTheme.colorScheme
+    val bg by animateColorAsState(
+        if (muted) colors.error.copy(alpha = 0.15f) else colors.surfaceVariant, tween(300), label = "bg"
+    )
+    val borderColor by animateColorAsState(
+        if (muted) colors.error else colors.outline, tween(300), label = "border"
+    )
+    val tint by animateColorAsState(
+        if (muted) colors.error else colors.onSurface, tween(300), label = "tint"
+    )
+
+    val scale = remember { Animatable(1f) }
+    val swing = remember { Animatable(0f) }
+    var firstRun by remember { mutableStateOf(true) }
+
+    LaunchedEffect(muted) {
+        if (firstRun) { firstRun = false; return@LaunchedEffect }
+        launch {
+            scale.animateTo(0.8f, tween(90))
+            scale.animateTo(1f, spring(Spring.DampingRatioMediumBouncy, Spring.StiffnessMedium))
+        }
+        if (!muted) {
+            repeat(3) {
+                swing.animateTo(18f, tween(60))
+                swing.animateTo(-18f, tween(60))
+            }
+        }
+        swing.animateTo(0f, tween(60))
+    }
+
+    Box(
+        modifier = Modifier
+            .size(44.dp)
+            .graphicsLayer { scaleX = scale.value; scaleY = scale.value }
+            .clip(RoundedCornerShape(14.dp))
+            .background(bg)
+            .border(1.dp, borderColor, RoundedCornerShape(14.dp))
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        AnimatedContent(
+            targetState = muted,
+            transitionSpec = {
+                (scaleIn(tween(220)) + fadeIn(tween(220))) togetherWith
+                        (scaleOut(tween(150)) + fadeOut(tween(150)))
+            },
+            label = "bellIcon"
+        ) { isMuted ->
             Icon(
-                imageVector = Icons.Outlined.Notifications,
-                contentDescription = "اعلان‌ها",
-                tint = colors.onSurface,
-                modifier = Modifier.size(22.dp)
+                imageVector = if (isMuted) Icons.Outlined.NotificationsOff else Icons.Outlined.Notifications,
+                contentDescription = if (isMuted) "فعال‌سازی اعلان‌ها" else "بی‌صدا کردن اعلان‌ها",
+                tint = tint,
+                modifier = Modifier
+                    .size(22.dp)
+                    .graphicsLayer {
+                        rotationZ = swing.value
+                        transformOrigin = TransformOrigin(0.5f, 0f)
+                    }
             )
         }
     }
@@ -587,20 +666,6 @@ fun habitVisual(key: String): Pair<ImageVector, Color> {
     }
 }
 
-// ───────────── Group ─────────────
-
-@Composable
-private fun GroupSection() {
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        SectionHeader("فعالیت بعدی گروه")
-        FlowCard {
-            EmptyMessage(
-                icon = Icons.Outlined.Groups,
-                text = "هنوز عضو گروهی نیستی. یه گروه بساز و با دوستات با هم پیشرفت کنین."
-            )
-        }
-    }
-}
 
 // ───────────── Quick actions ─────────────
 
@@ -608,7 +673,7 @@ private fun GroupSection() {
 private fun QuickActions(
     onCreateHabit: () -> Unit,
     onCreateChallenge: () -> Unit,
-    onCreateGroup: () -> Unit
+    onCreateNote: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
     val extra = LocalExtraColors.current
@@ -619,7 +684,8 @@ private fun QuickActions(
     ) {
         QuickAction("ایجاد عادت", Icons.Outlined.Add, extra.success, onCreateHabit, Modifier.weight(1f))
         QuickAction("ایجاد چالش", Icons.Outlined.Flag, colors.secondary, onCreateChallenge, Modifier.weight(1f))
-        QuickAction("ساخت گروه", Icons.Outlined.Groups, colors.primary, onCreateGroup, Modifier.weight(1f))
+        QuickAction("ایجاد یادداشت", Icons.Outlined.NoteAlt, colors.primary, onCreateNote, Modifier.weight(1f))
+
     }
 }
 

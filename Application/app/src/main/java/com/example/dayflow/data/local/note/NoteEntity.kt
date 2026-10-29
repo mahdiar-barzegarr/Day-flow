@@ -10,6 +10,6 @@ data class NoteEntity(
 
     val title: String,
     val content: String,
-    val createdAt: Long = System.currentTimeMillis(),
+    val createdAt: Long,
     val updatedAt: Long = System.currentTimeMillis(),
 )

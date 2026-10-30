@@ -37,6 +37,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.dayflow.navigation.navigateToTab
 
 /**
  * تب‌های نوار پایین. مقدار route باید با route های NavGraph یکی باشه.
@@ -57,11 +58,7 @@ fun DayFlowBottomBar(navController: NavController) {
     BottomBarContent(
         isSelected = { tab -> destination?.hierarchy?.any { it.route == tab.route } == true },
         onTabClick = { tab ->
-            navController.navigate(tab.route) {
-                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                launchSingleTop = true
-                restoreState = true
-            }
+            navController.navigateToTab(tab.route)
         }
     )
 }

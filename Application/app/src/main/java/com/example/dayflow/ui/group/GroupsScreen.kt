@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.example.dayflow.navigation.navigateToTab
 import com.example.dayflow.ui.challenges.ChallengeProgressBar
 import com.example.dayflow.ui.challenges.FlowSurface
 import com.example.dayflow.ui.components.DayFlowBottomBar
@@ -77,8 +78,8 @@ fun GroupsScreen(
         } else {
             GuestGroups(
                 modifier = Modifier.padding(padding),
-                onLogin = { navController.navigate("login") },
-                onRegister = { navController.navigate("register") }
+                onLogin = { navController.navigateToTab("login") },
+                onRegister = { navController.navigateToTab("register") }
             )
         }
     }
@@ -103,7 +104,6 @@ fun GroupsScreen(
     }
 }
 
-// ───────────────────────── لاگین‌شده ─────────────────────────
 
 @Composable
 private fun LoggedInGroups(
@@ -311,7 +311,6 @@ private fun GroupCard(group: GroupUi, onOpen: () -> Unit) {
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // بالا: آیکون + نام + آواتارها
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -345,7 +344,6 @@ private fun GroupCard(group: GroupUi, onOpen: () -> Unit) {
                 AvatarStack(group.memberInitials, group.memberCount)
             }
 
-            // فعالیت بعدی
             val shape = RoundedCornerShape(12.dp)
             Row(
                 modifier = Modifier
@@ -370,7 +368,6 @@ private fun GroupCard(group: GroupUi, onOpen: () -> Unit) {
                 )
             }
 
-            // پیشرفت هفته
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -386,7 +383,6 @@ private fun GroupCard(group: GroupUi, onOpen: () -> Unit) {
                 ChallengeProgressBar(group.progress, extra.brandGradient)
             }
 
-            // باز کردن
             val btnShape = RoundedCornerShape(14.dp)
             Row(
                 modifier = Modifier
@@ -458,7 +454,6 @@ private fun GuestGroups(modifier: Modifier, onLogin: () -> Unit, onRegister: () 
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // تصویر
             Box(modifier = Modifier.size(width = 170.dp, height = 130.dp)) {
                 Box(
                     modifier = Modifier

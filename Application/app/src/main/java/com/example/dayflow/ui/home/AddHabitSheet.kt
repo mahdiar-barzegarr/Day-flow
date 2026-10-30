@@ -90,7 +90,6 @@ fun AddHabitSheet(
                 )
             }
 
-            // آیکن
             Section("آیکن", optional = true) {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     habitIconKeys.forEach { key ->
@@ -111,7 +110,6 @@ fun AddHabitSheet(
                 }
             }
 
-            // چند روز (اختیاری)
             Section("چند روز تکرار بشه؟", optional = true) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Row(
@@ -141,7 +139,6 @@ fun AddHabitSheet(
                 }
             }
 
-            // ساعت (اختیاری)
             Section("ساعت انجام", optional = true) {
                 Row(
                     modifier = Modifier.horizontalScroll(rememberScrollState()),
@@ -159,7 +156,6 @@ fun AddHabitSheet(
                 }
             }
 
-            // دکمه‌ی ایجاد
             val enabled = title.isNotBlank()
             Box(
                 modifier = Modifier

@@ -61,6 +61,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.example.dayflow.navigation.navigateToTab
 
 private val ScreenBg = Color(0xFF070B14)
 private val FieldBg = Color(0xFF111A2B)
@@ -100,9 +101,7 @@ fun RegisterScreen(
 
     LaunchedEffect(isRegisterSuccess) {
         if (isRegisterSuccess) {
-            navController.navigate("home") {
-                popUpTo("register") { inclusive = true }
-            }
+            navController.navigateToTab("home")
         }
     }
 

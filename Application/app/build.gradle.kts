@@ -69,6 +69,11 @@ dependencies {
     // Retrofit
     implementation(libs.retrofit)
 
+    //Widget
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.material3)
+    implementation(libs.androidx.glance)
+
     // Gson Converter
     implementation(libs.converter.gson)
 

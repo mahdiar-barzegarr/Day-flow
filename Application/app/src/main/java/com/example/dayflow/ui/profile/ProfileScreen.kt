@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -175,36 +176,16 @@ private fun RecentNotes(
 private fun StatsRow(state: ProfileUiState) {
     val colors = MaterialTheme.colorScheme
     val extra = LocalExtraColors.current
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        StatTile(state.streakDays.toPersianDigits(), "روز پیاپی", extra.highlight, Modifier.weight(1f))
-        StatTile(state.totalHabits.toPersianDigits(), "عادت", colors.onSurface, Modifier.weight(1f))
-        StatTile(state.activeChallengesCount.toPersianDigits(), "چالش فعال", extra.success, Modifier.weight(1f))
-        StatTile(state.totalNotes.toPersianDigits(), "نت", colors.secondary, Modifier.weight(1f))
-    }
-}
-
-@Composable
-private fun BenefitRow(icon: ImageVector, text: String, tint: Color) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Max),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .size(36.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(tint.copy(alpha = 0.15f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(icon, null, tint = tint, modifier = Modifier.size(18.dp))
-        }
-        Text(
-            text,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f)
-        )
+        StatTile(state.streakDays.toPersianDigits(), "روز پیاپی", extra.highlight, Modifier.weight(1f).fillMaxHeight())
+        StatTile(state.totalHabits.toPersianDigits(), "عادت", colors.onSurface, Modifier.weight(1f).fillMaxHeight())
+        StatTile(state.activeChallengesCount.toPersianDigits(), "چالش فعال", extra.success, Modifier.weight(1f).fillMaxHeight())
+        StatTile(state.totalNotes.toPersianDigits(), "نت", colors.secondary, Modifier.weight(1f).fillMaxHeight())
     }
 }
 
@@ -287,17 +268,27 @@ private fun StatTile(value: String, label: String, color: Color, modifier: Modif
     FlowSurface(modifier = modifier) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp, horizontal = 8.dp),
+                .fillMaxSize()
+                .padding(vertical = 16.dp, horizontal = 4.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            verticalArrangement = Arrangement.Center
         ) {
-            Text(value, style = MaterialTheme.typography.headlineMedium, color = color)
+            Text(
+                value,
+                style = MaterialTheme.typography.headlineMedium,
+                color = color,
+                maxLines = 1,
+                softWrap = false
+            )
+            Spacer(Modifier.height(4.dp))
             Text(
                 label,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }

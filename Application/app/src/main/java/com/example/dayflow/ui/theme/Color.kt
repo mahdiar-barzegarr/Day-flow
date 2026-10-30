@@ -17,5 +17,4 @@ val DfDanger = Color(0xFFFF6B7A)
 val DfOnSurface = Color(0xFFF4F6FC)
 val DfOnSurfaceVariant = Color(0xFF9AA7BC)
 
-// فقط برای دکمه‌ی اصلی و حلقه‌ی پیشرفت
 val DfBrandGradient = Brush.linearGradient(listOf(DfPrimary, DfSecondary))

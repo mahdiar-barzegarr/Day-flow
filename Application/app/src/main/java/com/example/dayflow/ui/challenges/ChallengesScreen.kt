@@ -45,12 +45,11 @@ fun ChallengesScreen(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = { DayFlowBottomBar(navController) },
         floatingActionButton = { NewChallengeButton { showCreate = true } },
-        floatingActionButtonPosition = FabPosition.Start // در RTL یعنی سمت راست
+        floatingActionButtonPosition = FabPosition.Start
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
             ChallengesTopBar(state, viewModel::toggleSearch, viewModel::setQuery)
             TabsRow(state, viewModel::setTab)
-            FilterRow(state.filter, viewModel::setFilter)
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                 if (state.items.isEmpty()) {
                     EmptyState(state)
@@ -172,17 +171,6 @@ private fun TabsRow(state: ChallengesUiState, onTab: (ChallengeTab) -> Unit) {
     }
 }
 
-@Composable
-private fun FilterRow(selected: TypeFilter, onFilter: (TypeFilter) -> Unit) {
-    Row(
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        SheetChip("همه", selected == TypeFilter.All) { onFilter(TypeFilter.All) }
-        SheetChip("شخصی", selected == TypeFilter.Personal) { onFilter(TypeFilter.Personal) }
-        SheetChip("گروهی", selected == TypeFilter.Group) { onFilter(TypeFilter.Group) }
-    }
-}
 
 @Composable
 private fun ChallengeCard(item: ChallengeUi, onClick: () -> Unit, onActivate: () -> Unit) {

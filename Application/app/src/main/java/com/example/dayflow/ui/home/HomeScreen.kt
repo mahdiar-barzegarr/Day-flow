@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -61,9 +62,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -82,9 +83,9 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.dayflow.ui.challenges.CreateChallengeSheet
 import com.example.dayflow.ui.components.DayFlowBottomBar
@@ -131,7 +132,7 @@ fun HomeScreen(
         )
     }
 
-    if (showCreate){
+    if (showCreate) {
         CreateChallengeSheet(
             onDismiss = { showCreate = false },
             onCreate = viewModel::createChallenge
@@ -148,7 +149,7 @@ private fun HomeContent(
     onCreateHabit: () -> Unit,
     onCreateChallenge: () -> Unit,
     onCreateNote: () -> Unit,
-    onToggleMute:() -> Unit
+    onToggleMute: () -> Unit
 ) {
     Column(
         modifier = modifier
@@ -231,7 +232,9 @@ private fun HomeHeader(state: HomeUiState, onNotificationsClick: () -> Unit) {
 private fun MuteBellButton(muted: Boolean, onClick: () -> Unit) {
     val colors = MaterialTheme.colorScheme
     val bg by animateColorAsState(
-        if (muted) colors.error.copy(alpha = 0.15f) else colors.surfaceVariant, tween(300), label = "bg"
+        if (muted) colors.error.copy(alpha = 0.15f) else colors.surfaceVariant,
+        tween(300),
+        label = "bg"
     )
     val borderColor by animateColorAsState(
         if (muted) colors.error else colors.outline, tween(300), label = "border"
@@ -245,7 +248,9 @@ private fun MuteBellButton(muted: Boolean, onClick: () -> Unit) {
     var firstRun by remember { mutableStateOf(true) }
 
     LaunchedEffect(muted) {
-        if (firstRun) { firstRun = false; return@LaunchedEffect }
+        if (firstRun) {
+            firstRun = false; return@LaunchedEffect
+        }
         launch {
             scale.animateTo(0.8f, tween(90))
             scale.animateTo(1f, spring(Spring.DampingRatioMediumBouncy, Spring.StiffnessMedium))
@@ -317,7 +322,10 @@ private fun ProgressCard(state: HomeUiState) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
                 Caption("پیشرفت امروز")
                 Text(
                     text = title,
@@ -563,7 +571,8 @@ private fun HabitRow(
     val progressText = habit.targetDays
         ?.let { "${habit.streak.toPersianDigits()} از ${it.toPersianDigits()} روز" }
         ?: "${habit.streak.toPersianDigits()} روز پیاپی"
-    val subtitle = listOfNotNull(habit.reminderMinutes?.toTimeText(), progressText).joinToString(" · ")
+    val subtitle =
+        listOfNotNull(habit.reminderMinutes?.toTimeText(), progressText).joinToString(" · ")
 
     Row(
         modifier = Modifier
@@ -602,7 +611,13 @@ private fun HabitRow(
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
             containerColor = colors.surface,
-            title = { Text("حذف عادت", color = colors.onSurface, style = MaterialTheme.typography.titleMedium) },
+            title = {
+                Text(
+                    "حذف عادت",
+                    color = colors.onSurface,
+                    style = MaterialTheme.typography.titleMedium
+                )
+            },
             text = {
                 Text(
                     "«${habit.title}» حذف بشه؟ تاریخچه‌ی قبلیت توی آمار می‌مونه.",
@@ -679,12 +694,32 @@ private fun QuickActions(
     val extra = LocalExtraColors.current
 
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Max),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        QuickAction("ایجاد عادت", Icons.Outlined.Add, extra.success, onCreateHabit, Modifier.weight(1f))
-        QuickAction("ایجاد چالش", Icons.Outlined.Flag, colors.secondary, onCreateChallenge, Modifier.weight(1f))
-        QuickAction("ایجاد یادداشت", Icons.Outlined.NoteAlt, colors.primary, onCreateNote, Modifier.weight(1f))
+        QuickAction(
+            "ایجاد عادت",
+            Icons.Outlined.Add,
+            extra.success,
+            onCreateHabit,
+            Modifier.weight(1f)
+        )
+        QuickAction(
+            "ایجاد چالش",
+            Icons.Outlined.Flag,
+            colors.secondary,
+            onCreateChallenge,
+            Modifier.weight(1f)
+        )
+        QuickAction(
+            "ایجاد یادداشت",
+            Icons.Outlined.NoteAlt,
+            colors.primary,
+            onCreateNote,
+            Modifier.weight(1f)
+        )
 
     }
 }
@@ -708,7 +743,7 @@ private fun QuickAction(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 18.dp),
+                .padding(vertical = 18.dp, horizontal = 4.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
@@ -716,7 +751,11 @@ private fun QuickAction(
             Text(
                 text = label,
                 color = colors.onSurface,
-                style = MaterialTheme.typography.labelLarge
+                style = MaterialTheme.typography.labelLarge,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center
             )
         }
     }
@@ -773,7 +812,12 @@ private fun EmptyMessage(icon: ImageVector, text: String) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        Icon(icon, contentDescription = null, tint = colors.onSurfaceVariant, modifier = Modifier.size(28.dp))
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = colors.onSurfaceVariant,
+            modifier = Modifier.size(28.dp)
+        )
         Text(
             text = text,
             color = colors.onSurfaceVariant,

@@ -53,10 +53,14 @@ object Routes {
 
 fun NavController.navigateToTab(route: String) {
     if (currentDestination?.route == route) return
+
     navigate(route) {
-        popUpTo(graph.findStartDestination().id) { saveState = true }
+        popUpTo(Routes.HOME) {
+            inclusive = false
+            saveState = false
+        }
         launchSingleTop = true
-        restoreState = true
+        restoreState = false
     }
 }
 

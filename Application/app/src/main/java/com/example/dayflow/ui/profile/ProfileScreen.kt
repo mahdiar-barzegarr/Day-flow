@@ -110,27 +110,6 @@ fun ProfileScreen(
 
 
 
-@Composable
-private fun QuickTile(
-    icon: ImageVector, title: String, tint: Color,
-    onClick: () -> Unit, modifier: Modifier
-) {
-    FlowSurface(modifier = modifier.clickable(onClick = onClick)) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Box(
-                modifier = Modifier.size(40.dp).clip(RoundedCornerShape(12.dp))
-                    .background(tint.copy(alpha = 0.15f)),
-                contentAlignment = Alignment.Center
-            ) { Icon(icon, null, tint = tint, modifier = Modifier.size(22.dp)) }
-            Text(title, style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurface)
-        }
-    }
-}
-
 
 @Composable
 private fun RecentNotes(

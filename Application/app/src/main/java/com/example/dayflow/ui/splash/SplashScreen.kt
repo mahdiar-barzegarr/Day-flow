@@ -3,6 +3,7 @@ package com.example.dayflow.ui.splash
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,12 +33,14 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.dayflow.R
 import com.example.dayflow.ui.theme.LocalExtraColors
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
@@ -88,11 +91,9 @@ fun SplashScreen(onFinished: () -> Unit) {
                     .background(extra.brandGradient),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.TrendingUp,
+                Image(
+                    painter = painterResource(R.drawable.icon),
                     contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(64.dp)
                 )
             }
 
@@ -100,8 +101,8 @@ fun SplashScreen(onFinished: () -> Unit) {
 
             Text(
                 text = buildAnnotatedString {
-                    withStyle(SpanStyle(color = colors.onSurface)) { append("Day") }
-                    withStyle(SpanStyle(color = colors.secondary)) { append("Flow") }
+                    withStyle(SpanStyle(color = colors.onSurface)) { append("Rou") }
+                    withStyle(SpanStyle(color = colors.secondary)) { append("tino") }
                 },
                 fontSize = 40.sp,
                 fontWeight = FontWeight.Bold

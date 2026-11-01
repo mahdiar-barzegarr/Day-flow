@@ -19,17 +19,38 @@ import com.example.dayflow.MainActivity
 import com.example.dayflow.R
 
 object NotificationHelper {
+
     private const val CH_NOTIF = "habit_notif"
     private const val CH_ALARM = "habit_alarm"
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun createChannels(ctx: Context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val nm = ctx.getSystemService(NotificationManager::class.java)
+        nm.createNotificationChannel(
+            NotificationChannel(
+                CH_NOTIF,
+                "یادآوری عادت‌ها",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                setSound(
+                    RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION),
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build()
+                )
+                enableVibration(true)
+            }
+        )
         nm.createNotificationChannel(
             NotificationChannel(CH_NOTIF, "یادآوری عادت‌ها", NotificationManager.IMPORTANCE_DEFAULT)
         )
         val alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-        val ch = NotificationChannel(CH_ALARM, "الارم عادت‌ها", NotificationManager.IMPORTANCE_HIGH).apply {
+        val ch = NotificationChannel(
+            CH_ALARM,
+            "الارم عادت‌ها",
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply {
             setSound(
                 alarmSound,
                 AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM)
@@ -48,7 +69,7 @@ object NotificationHelper {
 
     fun showNotification(ctx: Context, id: Int, title: String, text: String) {
         val n = NotificationCompat.Builder(ctx, CH_NOTIF)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.icon)
             .setContentTitle(title).setContentText(text)
             .setAutoCancel(true)
             .setContentIntent(openAppIntent(ctx, id))
@@ -58,14 +79,14 @@ object NotificationHelper {
 
     fun showAlarm(ctx: Context, id: Int, title: String) {
         val n = NotificationCompat.Builder(ctx, CH_ALARM)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.icon)
             .setContentTitle(title).setContentText("وقت انجام عادتته ⏰")
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setAutoCancel(true)
             .setContentIntent(openAppIntent(ctx, id))
             .build()
-        n.flags = n.flags or Notification.FLAG_INSISTENT // صدا تا بستن ادامه داره
+        n.flags = n.flags or Notification.FLAG_INSISTENT
         notify(ctx, id + 500_000, n)
     }
 

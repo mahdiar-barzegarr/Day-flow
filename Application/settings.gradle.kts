@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Day Flow"
+rootProject.name = "Routino"
 include(":app")

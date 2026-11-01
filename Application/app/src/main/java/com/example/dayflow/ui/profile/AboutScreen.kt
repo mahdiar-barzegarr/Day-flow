@@ -109,7 +109,7 @@ fun AboutScreen(navController: NavController) {
 
             AppearIn(1) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("دی‌فلو", style = MaterialTheme.typography.headlineLarge, color = colors.onSurface)
+                    Text("روتینو", style = MaterialTheme.typography.headlineLarge, color = colors.onSurface)
                     Text(
                         "هر روز یه قدم کوچک، یه هدف بزرگ.",
                         style = MaterialTheme.typography.bodyMedium,

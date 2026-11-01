@@ -61,6 +61,7 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.coil.compose)
+    implementation(libs.androidx.core.splashscreen)
 
 
     //Data Store
@@ -73,6 +74,7 @@ dependencies {
     implementation(libs.androidx.glance.appwidget)
     implementation(libs.androidx.glance.material3)
     implementation(libs.androidx.glance)
+    implementation(libs.androidx.work.runtime.ktx)
 
     // Gson Converter
     implementation(libs.converter.gson)

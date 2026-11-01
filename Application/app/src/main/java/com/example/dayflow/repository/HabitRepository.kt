@@ -16,7 +16,9 @@ import com.example.dayflow.ui.widget.WidgetHabit
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.time.LocalDate
@@ -81,12 +83,15 @@ class HabitRepository @Inject constructor(
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun observeTodayWidget(): Flow<List<WidgetHabit>> =
-        combine(observeHabits(), observeLogs()) { habits, logs ->
-            val today = LocalDate.now().toEpochDay()
-            val doneIds = logs.filter { it.epochDay == today }.map { it.habitId }.toSet()
-            habits.map { WidgetHabit(it.id, it.title, it.id in doneIds) }
-        }
+    fun observeTodayWidget(): Flow<List<WidgetHabit>> = flow {
+        emitAll(
+            combine(observeHabits(), observeLogs()) { habits, logs ->
+                val today = LocalDate.now().toEpochDay()
+                val doneIds = logs.filter { it.epochDay == today }.map { it.habitId }.toSet()
+                habits.map { WidgetHabit(it.id, it.title, it.id in doneIds) }
+            }
+        )
+    }
 
     private val toggleMutex = Mutex()
 

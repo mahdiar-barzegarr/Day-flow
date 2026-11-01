@@ -214,4 +214,10 @@ class ToggleHabitAction : ActionCallback {
 
 class HabitsWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = HabitsWidget()
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun onEnabled(context: Context) {
+        super.onEnabled(context)
+        WidgetMidnightWorker.schedule(context)
+    }
 }

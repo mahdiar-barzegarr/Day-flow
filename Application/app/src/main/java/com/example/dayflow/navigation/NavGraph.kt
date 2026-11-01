@@ -14,6 +14,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.navigation
 import com.example.dayflow.ui.challenges.ChallengeDetailScreen
 import com.example.dayflow.ui.challenges.ChallengesScreen
 import com.example.dayflow.ui.home.HomeScreen
@@ -119,7 +120,8 @@ fun NavigationGraph(
                     navController.navigate(Routes.LOGIN) {
                         popUpTo(0) { inclusive = true }
                     }
-                }
+                },
+                onNoteClick = {navController.navigate(Routes.NOTE)}
             )
         }
 

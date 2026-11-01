@@ -47,7 +47,7 @@ class ReminderReceiver : BroadcastReceiver() {
                     try {
                         if (hasUnfinishedToday(ctx)) {
                             NotificationHelper.showNotification(
-                                ctx, 999_999, "Day Flow",
+                                ctx, 999_999, "Routino",
                                 "امروز یادت رفت عادت‌هات رو انجام بدی 😅"
                             )
                         }

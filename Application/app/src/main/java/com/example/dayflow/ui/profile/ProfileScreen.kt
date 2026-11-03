@@ -102,6 +102,7 @@ fun ProfileScreen(
                         onClick = { navController.navigate(Routes.ABOUT) }
                     )
                 }
+
             }
         }
     }

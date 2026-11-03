@@ -49,6 +49,7 @@ import androidx.compose.material.icons.outlined.Flag
 import androidx.compose.material.icons.outlined.LocalFireDepartment
 import androidx.compose.material.icons.outlined.NoteAlt
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.NotificationsOff
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Star
@@ -87,6 +88,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.dayflow.navigation.Routes
 import com.example.dayflow.ui.challenges.CreateChallengeSheet
 import com.example.dayflow.ui.components.DayFlowBottomBar
 import com.example.dayflow.ui.theme.LocalExtraColors
@@ -121,7 +123,8 @@ fun HomeScreen(
             onCreateHabit = { showAddDialog = true },
             onCreateChallenge = { showCreate = true },
             onCreateNote = onCreateNote,
-            onToggleMute = viewModel::toggleMute
+            onToggleMute = viewModel::toggleMute,
+            onOpenNotifications = { navController.navigate(Routes.NOTIFICATIONS) }
         )
     }
 
@@ -149,7 +152,8 @@ private fun HomeContent(
     onCreateHabit: () -> Unit,
     onCreateChallenge: () -> Unit,
     onCreateNote: () -> Unit,
-    onToggleMute: () -> Unit
+    onToggleMute: () -> Unit,
+    onOpenNotifications: () -> Unit
 ) {
     Column(
         modifier = modifier
@@ -163,6 +167,41 @@ private fun HomeContent(
         WeekSection(state)
         HabitsSection(state, onToggleHabit, onDeleteHabit)
         QuickActions(onCreateHabit, onCreateChallenge, onCreateNote)
+        NotificationHint(
+            onClick = onOpenNotifications,
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(bottom = 4.dp)
+        )
+    }
+}
+
+@Composable
+private fun NotificationHint(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val extra = LocalExtraColors.current
+    val shape = RoundedCornerShape(50)
+
+    Row(
+        modifier = modifier
+            .clip(shape)
+            .background(extra.highlight.copy(alpha = 0.08f))
+            .border(1.dp, extra.highlight.copy(alpha = 0.30f), shape)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Icon(
+            Icons.Outlined.NotificationsActive,
+            contentDescription = null,
+            tint = extra.highlight,
+            modifier = Modifier.size(16.dp)
+        )
+        Text(
+            text = "برای فعال‌سازی اعلان‌ها اینجا بزن",
+            color = extra.highlight,
+            style = MaterialTheme.typography.labelMedium
+        )
     }
 }
 
